@@ -1,481 +1,192 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#07111f">
-<title>SpeakQuest v7</title>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#07111f"><title>SpeakQuest v8</title>
 <style>
-:root{
- --bg:#07111f;--panel:#101c31;--panel2:#142541;--line:#29405f;
- --txt:#f5f8ff;--muted:#93a5c3;--cyan:#4dd4ff;--green:#45e3aa;
- --yellow:#ffd56a;--red:#ff7180;--purple:#a888ff;
-}
-*{box-sizing:border-box}
-html,body{margin:0;background:radial-gradient(circle at 15% 0,#102b4d 0,transparent 32%),var(--bg);color:var(--txt);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-body{min-height:100vh;padding-bottom:max(92px,calc(74px + env(safe-area-inset-bottom)))}
-button,input,textarea,select{font:inherit}
-button{touch-action:manipulation}
-.app{max-width:1080px;margin:auto;padding:18px}
-header{display:flex;justify-content:space-between;gap:14px;align-items:center;margin-bottom:15px}
-.brand{display:flex;align-items:center;gap:12px}.logo{width:45px;height:45px;border-radius:14px;background:linear-gradient(135deg,var(--cyan),var(--green));display:grid;place-items:center;color:#04121d;font-weight:950}
-h1{font-size:22px;margin:0}.small{font-size:12px}.muted{color:var(--muted)}
-.topstats{display:flex;gap:7px;flex-wrap:wrap}.chip{border:1px solid var(--line);background:#0b1729;border-radius:999px;padding:8px 10px;font-size:12px}
-.card{background:linear-gradient(180deg,#12213a,#0e192c);border:1px solid var(--line);border-radius:20px;padding:18px;box-shadow:0 15px 45px #0005}
-.kicker{font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--cyan);font-weight:900}
-h2{font-size:28px;line-height:1.08;margin:7px 0 9px}.prompt{font-size:17px;line-height:1.45;color:#e5edf9}.context{font-size:13px;color:var(--muted);margin-bottom:7px}
-.grid{display:grid;grid-template-columns:1.25fr .75fr;gap:17px}.side{display:grid;gap:15px}
-.workflow{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:14px}.step{padding:9px;border-radius:12px;background:#091526;border:1px solid var(--line);text-align:center;font-size:12px}.step.active{border-color:var(--cyan);background:rgba(77,212,255,.10)}
-.timer{font-size:34px;font-weight:950;font-variant-numeric:tabular-nums}.status{min-height:20px;color:var(--muted);font-size:13px}
-.recordbox{margin-top:15px;background:#081425;border:1px solid var(--line);border-radius:17px;padding:14px}
-.row{display:flex;justify-content:space-between;gap:12px;align-items:center}.buttons{display:flex;gap:8px;flex-wrap:wrap;margin-top:11px}
-button{border:0;border-radius:12px;padding:12px 15px;font-weight:850;cursor:pointer}.primary{background:linear-gradient(135deg,var(--cyan),var(--green));color:#04111b}.secondary{background:#1b2d4c;color:white;border:1px solid #355276}.ghost{background:transparent;color:#cad6ea;border:1px solid var(--line)}.recording{background:var(--red);color:white}.success{background:var(--green);color:#04130d}
-button:disabled{opacity:.42;cursor:not-allowed}
-.progress{display:none;margin-top:12px}.bar{height:10px;background:#07101d;border:1px solid #223653;border-radius:99px;overflow:hidden}.fill{height:100%;background:linear-gradient(90deg,var(--purple),var(--cyan));border-radius:99px;transition:width .25s}
-audio{width:100%;margin-top:10px}
-.feedback{display:none;margin-top:15px}.feedback.show{display:block}
-.scoreline{display:grid;grid-template-columns:105px 1fr;gap:12px;align-items:center}.bigscore{font-size:35px;font-weight:950;color:var(--green)}
-.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-top:12px}.metric{background:#091526;border:1px solid var(--line);border-radius:12px;padding:10px 7px;text-align:center}.metric b{display:block;font-size:19px}.metric span{font-size:10px;color:var(--muted)}
-.coach{margin-top:12px;padding:14px;border-radius:15px;background:rgba(255,213,106,.07);border:1px solid rgba(255,213,106,.25)}.coach.fix{background:rgba(255,113,128,.07);border-color:rgba(255,113,128,.28)}.coach.keep{background:rgba(69,227,170,.07);border-color:rgba(69,227,170,.28)}
-.coachType{font-size:11px;font-weight:950;letter-spacing:.12em}.transcriptWrap{margin-top:12px}.transcriptToggle{font-size:12px;color:var(--cyan);cursor:pointer}.transcriptBox{display:none;margin-top:8px}.transcriptBox.show{display:block}textarea{width:100%;min-height:88px;border-radius:12px;background:#07101e;color:white;border:1px solid var(--line);padding:11px}
-.modegrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.mode{border:1px solid var(--line);border-radius:14px;padding:12px;background:#0a1729;cursor:pointer}.mode.active{border-color:var(--cyan)}.mode b{display:block}.mode span{font-size:11px;color:var(--muted)}
-.quest{padding:12px;border-radius:14px;background:#091526;border:1px solid var(--line);margin-top:9px}.quest.locked{opacity:.5}
-.dashboard{display:none}.screen{display:none}.screen.active{display:block}
-.dashgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}.dash{background:#091526;border:1px solid var(--line);border-radius:14px;padding:13px}.dash b{font-size:23px;display:block}
-.nav{position:fixed;z-index:30;left:50%;bottom:max(10px,env(safe-area-inset-bottom));transform:translateX(-50%);width:min(620px,calc(100% - 24px));padding:7px;background:#0a1629ee;border:1px solid var(--line);border-radius:17px;display:grid;grid-template-columns:repeat(4,1fr);backdrop-filter:blur(12px)}.nav button{background:transparent;color:var(--muted);padding:9px 5px;font-size:11px}.nav button.active{background:#1a2c49;color:white}
-.badge{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:5px 8px;font-size:11px;margin:3px 3px 0 0}
-.hidden{display:none!important}
-@media(max-width:820px){.app{padding:13px}.grid{grid-template-columns:1fr}.topstats{width:100%}header{align-items:flex-start;flex-direction:column}.metrics,.dashgrid{grid-template-columns:repeat(2,1fr)}.modegrid{grid-template-columns:1fr 1fr}h2{font-size:25px}.prompt{font-size:16px}}
-</style>
-</head>
-<body>
-<div class="app">
-<header>
- <div class="brand"><div class="logo">SQ</div><div><h1>SpeakQuest</h1><div class="small muted">v7 · QUICK RESPONSE RPG</div></div></div>
- <div class="topstats">
-   <div class="chip">🎙 <b id="topMin">0</b> min</div>
-   <div class="chip">🗣 <b id="topWords">0</b> words</div>
-   <div class="chip">⚡ <b id="topResponse">—</b></div>
-   <div class="chip">🔥 <b id="topFlow">—</b></div>
- </div>
-</header>
+:root{--bg:#07111f;--p:#101d32;--p2:#142641;--line:#2a4263;--t:#f5f8ff;--m:#96a9c7;--c:#4dd4ff;--g:#45e3aa;--y:#ffd56a;--r:#ff7180;--v:#a888ff}
+*{box-sizing:border-box}html,body{margin:0;background:radial-gradient(circle at 15% 0,#123052 0,transparent 30%),var(--bg);color:var(--t);font-family:Inter,system-ui,-apple-system,sans-serif}body{padding-bottom:max(90px,calc(75px + env(safe-area-inset-bottom)))}button,textarea,select{font:inherit}.app{max-width:1080px;margin:auto;padding:15px}
+header{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:14px}.brand{display:flex;gap:11px;align-items:center}.logo{width:46px;height:46px;border-radius:15px;background:linear-gradient(135deg,var(--c),var(--g));display:grid;place-items:center;color:#04131d;font-weight:950}h1{font-size:22px;margin:0}h2{font-size:27px;line-height:1.12;margin:7px 0 9px}h3{margin:7px 0}.muted{color:var(--m)}.small{font-size:12px}.k{font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--c);font-weight:900}
+.stats{display:flex;gap:6px;flex-wrap:wrap}.chip,.badge{border:1px solid var(--line);background:#0a1729;border-radius:999px;padding:7px 9px;font-size:11px}.badge{display:inline-block;margin:3px 2px 0 0}
+.card{background:linear-gradient(180deg,#12223a,#0e192c);border:1px solid var(--line);border-radius:20px;padding:17px;box-shadow:0 14px 40px #0004}.grid{display:grid;grid-template-columns:1.25fr .75fr;gap:16px}.side{display:grid;gap:14px}.prompt{font-size:17px;line-height:1.45;color:#e7eef9}.scene{font-size:13px;color:var(--m)}
+.flowsteps{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px}.step{padding:8px;border-radius:11px;border:1px solid var(--line);background:#091526;text-align:center;font-size:11px}.step.on{border-color:var(--c);background:#102b3e}
+.record{margin-top:14px;padding:13px;border-radius:16px;background:#081425;border:1px solid var(--line)}.row{display:flex;justify-content:space-between;align-items:center;gap:10px}.timer{font-size:32px;font-weight:950;font-variant-numeric:tabular-nums}.buttons{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}button{border:0;border-radius:12px;padding:11px 14px;font-weight:850;cursor:pointer;touch-action:manipulation}.primary{background:linear-gradient(135deg,var(--c),var(--g));color:#04121b}.secondary{background:#1a2d4d;color:white;border:1px solid #365477}.ghost{background:transparent;color:#d1dced;border:1px solid var(--line)}.red{background:var(--r);color:white}.green{background:var(--g);color:#03150d}button:disabled{opacity:.4}
+.progress{display:none;margin-top:11px}.bar{height:9px;background:#06101d;border:1px solid #223654;border-radius:99px;overflow:hidden}.fill{height:100%;background:linear-gradient(90deg,var(--v),var(--c));transition:width .2s}
+.feedback{display:none;margin-top:14px}.feedback.show{display:block}.headline{display:flex;gap:13px;align-items:center}.big{font-size:38px;font-weight:950;color:var(--g)}.gradegrid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:11px}.grade{background:#091526;border:1px solid var(--line);border-radius:12px;padding:9px;text-align:center}.grade b{display:block;font-size:19px}.grade span{font-size:9px;color:var(--m)}
+.fb{padding:12px;border-radius:14px;margin-top:9px;border:1px solid var(--line);background:#091526}.fb.good{border-color:#2c7b67;background:#0c2924}.fb.improve{border-color:#806c32;background:#2a2410}.fb.natural{border-color:#4b4a88;background:#171731}.label{font-size:10px;letter-spacing:.12em;font-weight:950}.good .label{color:var(--g)}.improve .label{color:var(--y)}.natural .label{color:#c2b5ff}
+textarea{width:100%;min-height:85px;background:#07101e;color:white;border:1px solid var(--line);border-radius:11px;padding:10px}.trans{display:none;margin-top:9px}.trans.show{display:block}.link{color:var(--c);font-size:12px;cursor:pointer;margin-top:9px}
+.modegrid{display:grid;grid-template-columns:1fr 1fr;gap:7px}.mode{padding:11px;border:1px solid var(--line);border-radius:13px;background:#091526;cursor:pointer}.mode.active{border-color:var(--c)}.mode b{display:block}.mode span{font-size:10px;color:var(--m)}
+.quest{padding:12px;border-radius:14px;background:#091526;border:1px solid var(--line);margin-top:8px}.quest.lock{opacity:.5}.screen{display:none}.screen.active{display:block}.dashgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.dash{background:#091526;border:1px solid var(--line);border-radius:13px;padding:12px}.dash b{display:block;font-size:22px}
+.nav{position:fixed;z-index:50;left:50%;bottom:max(9px,env(safe-area-inset-bottom));transform:translateX(-50%);width:min(620px,calc(100% - 22px));display:grid;grid-template-columns:repeat(4,1fr);padding:6px;background:#091526ee;border:1px solid var(--line);border-radius:17px;backdrop-filter:blur(12px)}.nav button{background:transparent;color:var(--m);font-size:10px;padding:8px 4px}.nav button.on{background:#1a2d4b;color:white}.hidden{display:none!important}.daybar{display:flex;gap:6px;overflow:auto;padding-bottom:4px}.day{min-width:82px;text-align:center;padding:9px;border-radius:12px;border:1px solid var(--line);background:#091526}.day.done{border-color:var(--g)}.day.current{border-color:var(--c)}
+@media(max-width:820px){.app{padding:12px}header{align-items:flex-start;flex-direction:column}.grid{grid-template-columns:1fr}.gradegrid,.dashgrid{grid-template-columns:repeat(2,1fr)}h2{font-size:24px}.prompt{font-size:16px}}
+</style></head>
+<body><div class="app">
+<header><div class="brand"><div class="logo">SQ</div><div><h1>SpeakQuest</h1><div class="small muted">v8 · ADVENTURE + COACHING ENGINE</div></div></div>
+<div class="stats"><div class="chip">🎙 <b id="hMin">0</b>m</div><div class="chip">🗣 <b id="hWords">0</b></div><div class="chip">⚡ <b id="hResp">—</b></div><div class="chip">🔥 <b id="hFlow">—</b></div></div></header>
 
-<section id="play" class="screen active">
-<div class="grid">
-<main>
- <div class="workflow">
-   <div id="s1" class="step active"><b>1 · RESPOND</b><br><span class="muted">Say it quickly</span></div>
-   <div id="s2" class="step"><b>2 · COACH</b><br><span class="muted">One useful fix</span></div>
-   <div id="s3" class="step"><b>3 · RETRY</b><br><span class="muted">Beat attempt 1</span></div>
- </div>
- <div class="card">
-   <div class="kicker" id="modeLabel">Quick Play</div>
-   <div class="context" id="sceneContext"></div>
-   <h2 id="question"></h2>
-   <div class="prompt" id="instruction"></div>
-   <div id="helpBadges" style="margin-top:8px"></div>
+<section id="play" class="screen active"><div class="grid"><main>
+<div class="flowsteps"><div id="st1" class="step on"><b>1 · RESPOND</b></div><div id="st2" class="step"><b>2 · LEARN</b></div><div id="st3" class="step"><b>3 · RETRY</b></div></div>
+<div class="card"><div class="k" id="modeLabel">Quick Play</div><div class="scene" id="scene"></div><h2 id="question"></h2><div class="prompt" id="instruction"></div><div id="tags"></div>
+<div class="record"><div class="row"><div><div class="k" style="color:var(--g)">Your response</div><div class="small muted" id="status">Answer naturally. Short and useful beats long and perfect.</div></div><div class="timer" id="timer">00:00</div></div>
+<div class="buttons"><button id="rec" class="primary">🎙 Start</button><button id="check" class="secondary" disabled>✨ Check answer</button><button id="skip" class="ghost">Skip</button></div><audio id="audio" controls class="hidden" style="width:100%;margin-top:8px"></audio>
+<div id="progress" class="progress"><div class="row"><b id="progTitle">Analyzing…</b><span class="small muted" id="pct">10%</span></div><div class="bar" style="margin-top:6px"><div id="fill" class="fill" style="width:10%"></div></div><div id="progText" class="small muted" style="margin-top:5px"></div></div>
+<div id="feedback" class="feedback"><div class="headline"><div id="overall" class="big">—</div><div><b id="verdict"></b><div id="summary" class="small muted"></div></div></div>
+<div class="gradegrid"><div class="grade"><b id="gUnderstand">—</b><span>UNDERSTOOD</span></div><div class="grade"><b id="gItalian">—</b><span>ITALIAN</span></div><div class="grade"><b id="gNatural">—</b><span>NATURALNESS</span></div><div class="grade"><b id="gFlow">—</b><span>RESPONSE / FLOW</span></div></div>
+<div class="fb good"><div class="label">✓ WHAT WORKED</div><div id="worked"></div></div>
+<div class="fb improve"><div class="label">△ IMPROVE ONE THING</div><div id="improve"></div></div>
+<div class="fb natural"><div class="label">🇮🇹 MORE NATURAL</div><div id="natural"></div></div>
+<div class="fb"><div class="label" style="color:var(--c)">🔁 RETRY CHALLENGE</div><b id="challenge"></b></div>
+<div id="transToggle" class="link">What SpeakQuest heard ▾</div><div id="transBox" class="trans"><textarea id="transcript"></textarea><div class="buttons"><button id="recheck" class="ghost">Re-check edited transcript</button></div><div class="small muted">Edit only transcription mistakes. This does not count as another attempt.</div></div>
+<div class="buttons"><button id="retry" class="primary">🔁 Retry</button><button id="next" class="green hidden">Continue →</button></div><div id="compare" class="hidden"></div></div>
+</div></div></main>
+<aside class="side"><div class="card"><div class="k">Game Mode</div><div id="modes" class="modegrid"></div></div>
+<div class="card"><div class="k">Daily Output</div><div class="row" style="margin-top:7px"><b id="daily">0 / 60 min</b><b id="dailyPct">0%</b></div><div class="bar" style="margin-top:7px"><div id="dailyFill" class="fill" style="width:0"></div></div></div>
+<div class="card"><div class="k">Conversation Tools</div><div id="rescue"></div></div></aside></div></section>
 
-   <div class="recordbox">
-    <div class="row">
-      <div><div class="kicker" style="color:var(--green)">Your answer</div><div class="status" id="status">Tap record. Answer naturally in 8–25 seconds.</div></div>
-      <div class="timer" id="timer">00:00</div>
-    </div>
-    <div class="buttons">
-      <button class="primary" id="recordBtn">🎙 Start</button>
-      <button class="secondary" id="analyzeBtn" disabled>✨ Check answer</button>
-      <button class="ghost" id="skipBtn">Skip</button>
-    </div>
-    <audio id="audio" controls class="hidden"></audio>
+<section id="adventure" class="screen"><div class="card"><div class="k">Adventure</div><h2>Viaggio attraverso l’Italia</h2><div class="prompt">Each stop is a short multi-turn conversation. Your answer changes the situation, then you continue the scene.</div><div id="cities"></div></div></section>
 
-    <div class="progress" id="progress">
-      <div class="row"><b id="progressTitle">Analyzing speech…</b><span class="small muted" id="progressPct">10%</span></div>
-      <div class="bar" style="margin-top:7px"><div class="fill" id="progressFill" style="width:10%"></div></div>
-      <div class="small muted" id="progressDetail" style="margin-top:6px">Measuring response time and flow.</div>
-    </div>
+<section id="dashboard" class="screen"><div class="card"><div class="k">Your Output</div><h2>Progress</h2><div class="dashgrid"><div class="dash"><span class="small muted">🎙 Speaking</span><b id="dMin">0m</b></div><div class="dash"><span class="small muted">🗣 Words</span><b id="dWords">0</b></div><div class="dash"><span class="small muted">⚡ Response</span><b id="dResp">—</b></div><div class="dash"><span class="small muted">🔥 Best flow</span><b id="dFlow">—</b></div></div></div>
+<div class="card" style="margin-top:14px"><div class="k">Language Growth</div><div id="growth"></div></div><div class="card" style="margin-top:14px"><div class="k">Recent Results</div><div id="history"></div></div></section>
 
-    <div class="feedback" id="feedback">
-      <div class="scoreline">
-       <div class="bigscore" id="score">—</div>
-       <div><b id="resultTitle">Understood</b><div class="small muted" id="resultSummary"></div></div>
-      </div>
-      <div class="metrics">
-       <div class="metric"><b id="mResponse">—</b><span>response start</span></div>
-       <div class="metric"><b id="mFlow">—</b><span>best flow</span></div>
-       <div class="metric"><b id="mWords">—</b><span>words</span></div>
-       <div class="metric"><b id="mPauses">—</b><span>long pauses</span></div>
-      </div>
-
-      <div class="coach" id="coachBox">
-       <div class="coachType" id="coachType">UPGRADE IT</div>
-       <h3 id="coachTitle" style="margin:5px 0"></h3>
-       <div id="coachDetail"></div>
-      </div>
-
-      <div class="transcriptWrap">
-       <div class="transcriptToggle" id="transcriptToggle">What SpeakQuest heard ▾</div>
-       <div class="transcriptBox" id="transcriptBox">
-        <textarea id="transcript"></textarea>
-        <div class="buttons"><button class="ghost" id="recheckBtn">Re-check corrected transcript</button></div>
-        <div class="small muted">Edit only if transcription heard you incorrectly. Re-checking does not add minutes, XP, or another attempt.</div>
-       </div>
-      </div>
-
-      <div class="buttons">
-       <button class="primary" id="retryBtn">🔁 Retry same situation</button>
-       <button class="success hidden" id="nextBtn">Next situation →</button>
-      </div>
-      <div id="compare" class="hidden" style="margin-top:12px"></div>
-    </div>
-   </div>
- </div>
-</main>
-
-<aside class="side">
- <div class="card">
-   <div class="kicker">Game Mode</div>
-   <div class="modegrid" id="modeGrid"></div>
- </div>
- <div class="card">
-   <div class="kicker">Today's Goal</div>
-   <div class="row" style="margin-top:7px"><b id="todayText">0 / 60 min</b><b id="todayPct">0%</b></div>
-   <div class="bar" style="margin-top:8px"><div class="fill" id="todayFill" style="width:0%"></div></div>
-   <div class="small muted" style="margin-top:7px">Quick answers count. Retries count. The objective is output.</div>
- </div>
- <div class="card">
-   <div class="kicker">Rescue Phrases</div>
-   <div id="rescueList" style="margin-top:7px"></div>
- </div>
-</aside>
+<section id="settings" class="screen"><div class="card"><div class="k">Setup</div><h2>Speech engine</h2><p class="prompt">Your original audio supplies response-time and flow measurements. A local Whisper model supplies the transcript. Coaching avoids calling uncertain transcription a definite error.</p>
+<label class="small muted">Transcription</label><select id="model" style="width:100%;margin-top:5px;padding:11px;border-radius:11px;background:#091526;color:white;border:1px solid var(--line)"><option value="base">Better accuracy — Whisper Base</option><option value="tiny">Faster — Whisper Tiny</option></select>
+<div class="buttons"><button id="reset" class="ghost">Reset local progress</button></div><div id="compat" class="small muted" style="margin-top:9px"></div></div></section>
 </div>
-</section>
-
-<section id="adventure" class="screen">
- <div class="card">
-  <div class="kicker">Adventure</div>
-  <h2>Viaggio attraverso l’Italia</h2>
-  <div class="prompt">Short real-life conversations move you through each city. Every encounter uses the same quick-response engine as the main game.</div>
-  <div id="adventureList" style="margin-top:12px"></div>
- </div>
-</section>
-
-<section id="dashboard" class="screen">
- <div class="card">
-  <div class="kicker">Your Output</div><h2 id="monthTitle">This month</h2>
-  <div class="dashgrid">
-   <div class="dash"><span class="small muted">🎙 Speaking time</span><b id="dMin">0 min</b></div>
-   <div class="dash"><span class="small muted">🗣 Words spoken</span><b id="dWords">0</b></div>
-   <div class="dash"><span class="small muted">⚡ Avg response</span><b id="dResponse">—</b></div>
-   <div class="dash"><span class="small muted">🔥 Best flow</span><b id="dFlow">—</b></div>
-  </div>
- </div>
- <div class="card" style="margin-top:15px">
-  <div class="kicker">Language Growth</div>
-  <h3>Comfort words & upgrades</h3>
-  <div id="growth"></div>
- </div>
- <div class="card" style="margin-top:15px">
-  <div class="kicker">Recent Attempts</div>
-  <div id="history"></div>
- </div>
-</section>
-
-<section id="settings" class="screen">
- <div class="card">
-  <div class="kicker">Settings</div><h2>Simple setup</h2>
-  <p class="prompt">Audio analysis happens locally. SpeakQuest uses a local Whisper model for transcription. The first transcription can take longer while the model downloads.</p>
-  <label class="small muted">Transcription quality</label>
-  <select id="modelChoice" style="width:100%;margin-top:6px;background:#091526;color:white;border:1px solid var(--line);padding:11px;border-radius:11px">
-    <option value="base">Better accuracy — Whisper Base</option>
-    <option value="tiny">Faster — Whisper Tiny</option>
-  </select>
-  <div class="buttons"><button class="ghost" id="resetBtn">Reset local data</button></div>
-  <div class="small muted" id="compat" style="margin-top:10px"></div>
- </div>
-</section>
-</div>
-
-<nav class="nav">
- <button class="active" data-screen="play">⚡<br>Play</button>
- <button data-screen="adventure">🗺<br>Adventure</button>
- <button data-screen="dashboard">📊<br>Progress</button>
- <button data-screen="settings">⚙️<br>Setup</button>
-</nav>
-
+<nav class="nav"><button class="on" data-screen="play">⚡<br>Play</button><button data-screen="adventure">🗺<br>Adventure</button><button data-screen="dashboard">📊<br>Progress</button><button data-screen="settings">⚙️<br>Setup</button></nav>
 <script>
-const $=id=>document.getElementById(id);
-const QUICK=[
- {scene:"☕ Bar in Rome",q:"Il barista chiede: «Cosa desidera?»",instruction:"Order a drink and one food item. 8–15 seconds.",tags:["vorrei…","per favore"],intent:[/\b(vorrei|prendo|desidero)\b/i],up:["vorrei"],type:"quick"},
- {scene:"🚆 Roma Termini",q:"«Il suo treno è stato cancellato. Cosa vuole fare?»",instruction:"Ask about another train or another option. 10–20 seconds.",tags:["posso…?","c'è…?"],intent:[/\b(posso|vorrei|c['’]è|altro|prossimo)\b/i],up:["posso"],type:"quick"},
- {scene:"🍝 Restaurant",q:"«Com'è la pasta?»",instruction:"Give an opinion and one reason. 8–15 seconds.",tags:["secondo me","perché"],intent:[/\b(buon|ottim|piac|secondo me|perché)\b/i],up:["secondo me"],type:"quick"},
- {scene:"🏨 Hotel",q:"«C'è un problema con la camera?»",instruction:"Explain one simple problem and ask for help. 10–20 seconds.",tags:["c'è un problema","potrebbe…?"],intent:[/\b(problema|camera|potrebbe|vorrei|non funziona)\b/i],up:["potrebbe"],type:"quick"},
- {scene:"👋 New friend",q:"«Perché stai imparando l'italiano?»",instruction:"Give a simple reason. 10–20 seconds.",tags:["perché","voglio"],intent:[/\b(perché|voglio|piace|italia|famiglia|viagg)\b/i],up:["perché"],type:"quick"},
- {scene:"🏀 Conversation",q:"«Ti piace il basket? Perché?»",instruction:"Answer and give one reason. 10–20 seconds.",tags:["mi piace","perché"],intent:[/\b(mi piace|adoro|basket|pallacanestro|perché)\b/i],up:["perché"],type:"quick"},
- {scene:"🛍 Shop",q:"«Posso aiutarla?»",instruction:"Say what you are looking for and ask the price. 10–20 seconds.",tags:["sto cercando","quanto costa"],intent:[/\b(cercando|vorrei|quanto costa|prezzo)\b/i],up:["sto cercando"],type:"quick"},
- {scene:"🧭 Street",q:"«Ha bisogno di aiuto?»",instruction:"Ask how to get to the train station. 8–15 seconds.",tags:["come posso","stazione"],intent:[/\b(stazione|come|arrivare|andare|dov['’]è)\b/i],up:["come"],type:"quick"}
-];
-const CONVERSATION=[
- {scene:"🗣 Conversation Mode",q:"Raccontami della tua giornata.",instruction:"Speak for 2 minutes. This mode is for longer connected speech.",tags:["prima","poi","alla fine"],intent:[],up:[],type:"long"},
- {scene:"🗣 Conversation Mode",q:"Parlami di un viaggio che ricordi bene.",instruction:"Speak for 2–3 minutes using past tense.",tags:["mentre","poi","perché"],intent:[],up:[],type:"long"},
- {scene:"🗣 Conversation Mode",q:"Descrivi il tuo lavoro a una persona italiana.",instruction:"Speak for 2 minutes using simple, clear Italian.",tags:["mi occupo di","lavoro con"],intent:[],up:[],type:"long"}
-];
-const RAPID=[
- {scene:"⚡ Rapid Fire",q:"Cosa hai fatto ieri sera?",instruction:"Answer immediately. 8–12 seconds.",tags:["ieri","ho…"],intent:[/\b(ieri|ho|sono)\b/i],up:["ieri"],type:"rapid"},
- {scene:"⚡ Rapid Fire",q:"Cosa farai domani?",instruction:"Answer immediately. 8–12 seconds.",tags:["domani","farò / vado a"],intent:[/\b(domani|farò|andrò|vado a|voglio)\b/i],up:["domani"],type:"rapid"},
- {scene:"⚡ Rapid Fire",q:"Qual è il tuo cibo italiano preferito?",instruction:"Answer + one reason. 8–12 seconds.",tags:["preferito","perché"],intent:[/\b(preferit|perché|piace|adoro)\b/i],up:["perché"],type:"rapid"},
- {scene:"⚡ Rapid Fire",q:"Dove vuoi andare in Italia?",instruction:"Answer immediately. 8–12 seconds.",tags:["voglio andare","perché"],intent:[/\b(voglio|vorrei|andare|perché)\b/i],up:["voglio"],type:"rapid"}
-];
-const MODES={"Quick Play":QUICK,"Rapid Fire":RAPID,"Conversation":CONVERSATION};
-const ADVENTURE=[
- {city:"Roma",icon:"🏛️",unlock:0,desc:"Café, hotel, directions",items:[QUICK[0],QUICK[3],QUICK[7]]},
- {city:"Napoli",icon:"🍕",unlock:200,desc:"Food, trains, opinions",items:[QUICK[1],QUICK[2],RAPID[2]]},
- {city:"Sicilia",icon:"🌊",unlock:500,desc:"Travel, people, spontaneous talk",items:[QUICK[4],RAPID[3],QUICK[6]]}
-];
-const RESCUE=["Fammi pensare…","Come posso dire…","Quello che voglio dire è…","In altre parole…"];
-const STOP=new Set("a ad al alla alle allo ai agli anche che chi con da dal dalla dei del della di e ed è era ero essere gli ha hai hanno ho i il in io la le lo loro ma mi mia mie miei mio ne nel nella noi non o per più poi se si sono su tra un una uno".split(" "));
-const CONNECT=["perché","quindi","però","mentre","comunque","invece","secondo me","allora","cioè","poi"];
-const UPGRADES={
- "fare":["occuparsi di","preparare","creare"],"andare":["tornare","arrivare","partire"],
- "molto":["davvero","parecchio","particolarmente"],"buono":["ottimo","piacevole","gustoso"],
- "bello":["interessante","piacevole","splendido"],"mi piace":["preferisco","adoro","mi interessa"],
- "penso che":["secondo me","direi che","mi sembra che"]
+const $=x=>document.getElementById(x), RESCUE=["Fammi pensare…","Vediamo…","Come posso dire…","Quello che voglio dire è…","In altre parole…"];
+const SCENARIOS=[
+["☕ Café","Il barista ti saluta.","Buongiorno! Cosa desidera?","Order a drink and something to eat.",["vorrei","per favore"],["vorrei","prendo","caffè","cornetto"],"Try a polite request: «Vorrei… per favore.»"],
+["☕ Café","Hai già ordinato.","Desidera altro?","Say no politely and thank the barista.",["no grazie","basta così"],["grazie","basta","nient'altro","no"],"Try: «No grazie, basta così.»"],
+["🍝 Restaurant","The waiter wants your opinion.","Com'è la pasta?","Give an opinion and one reason.",["secondo me","perché"],["buona","ottima","piace","perché"],"Add a reason with «perché…»"],
+["🍝 Restaurant","Your food hasn't arrived.","Va tutto bene?","Explain that you're still waiting for your food.",["sto aspettando","non è arrivato"],["aspett","arriv","ordin"],"Try: «Sto ancora aspettando il mio piatto.»"],
+["🍝 Restaurant","You finished dinner.","Desidera un dolce o un caffè?","Choose one, or politely decline.",["prendo","no grazie"],["prendo","vorrei","grazie","caffè","dolce"],"Answer directly, then add «grazie»."],
+["🚆 Train","Your train was cancelled.","Cosa vuole fare?","Ask if there is another train.",["c'è un altro…?","prossimo treno"],["treno","altro","prossimo","c'è"],"Try: «C'è un altro treno per…?»"],
+["🚆 Train","You're at the ticket desk.","Solo andata o andata e ritorno?","Tell the agent you want a round trip.",["andata e ritorno"],["ritorno","andata"],"Use the fixed expression «andata e ritorno»."],
+["🚆 Train","You can't find your platform.","Posso aiutarla?","Ask which platform your train leaves from.",["da quale binario","parte"],["binario","parte","treno"],"Try: «Da quale binario parte il treno?»"],
+["🏨 Hotel","You just arrived.","Ha una prenotazione?","Say yes and give your name.",["sì","a nome di"],["prenot","nome","sì"],"Try: «Sì, a nome di…»"],
+["🏨 Hotel","Something is wrong in your room.","C'è un problema con la camera?","Explain one problem and ask for help.",["non funziona","potrebbe aiutarmi"],["problema","funziona","camera","aiut"],"State the problem first, then ask for help."],
+["🏨 Hotel","You want to leave later.","A che ora vuole lasciare la camera?","Ask whether late checkout is possible.",["check-out","più tardi","possibile"],["tardi","possibile","check"],"Try: «È possibile fare il check-out più tardi?»"],
+["🧭 Street","You look lost.","Ha bisogno di aiuto?","Ask how to get to the station.",["come arrivo","stazione"],["stazione","arriv","dov"],"Try: «Come arrivo alla stazione?»"],
+["🧭 Street","Someone gives you directions.","Ha capito?","Say you understood and repeat one part back.",["sì","quindi"],["sì","capito","quindi"],"Confirm with «Quindi devo…»"],
+["🛍 Shop","A clerk approaches.","Posso aiutarla?","Say what you're looking for.",["sto cercando"],["cerc","vorrei"],"Try «Sto cercando…» instead of only «voglio…»."],
+["🛍 Shop","You found something you like.","Vuole provarlo?","Say yes and ask where the fitting room is.",["sì","camerino"],["sì","camerino","dove"],"Combine both ideas in one response."],
+["🛍 Shop","You want to buy it.","Le piace?","Say yes, then ask the price.",["mi piace","quanto costa"],["piace","costa","prezzo"],"Add «Quanto costa?»"],
+["👋 Meeting someone","You've just met an Italian.","Di dove sei?","Say where you're from and ask them back.",["sono di","e tu?"],["sono","vengo","tu"],"Turn it into conversation with «E tu?»"],
+["👋 Meeting someone","They learn you're studying Italian.","Perché studi l'italiano?","Give a reason in 1–2 sentences.",["perché","voglio"],["perché","voglio","piace","italia"],"Give the reason immediately with «perché…»"],
+["👋 Meeting someone","They compliment your Italian.","Parli molto bene italiano!","Respond naturally to the compliment.",["grazie","sto imparando"],["grazie","impar"],"Try: «Grazie! Sto ancora imparando.»"],
+["🏀 Basketball","Someone sees your basketball shirt.","Ti piace il basket?","Answer and explain why.",["sì","perché"],["basket","pallacanestro","perché","piace"],"Give one specific reason."],
+["🏀 Basketball","You're discussing a game.","Com'è stata la partita?","Describe the game in 2–3 sentences.",["è stata","però"],["partita","stata","vinto","perso"],"Use «è stata…» + one detail."],
+["✈️ Airport","An employee asks about your luggage.","Quanti bagagli ha?","Say how many bags you have.",["ho","bagagli"],["bagag","valigi","ho"],"A short direct answer is perfect here."],
+["✈️ Airport","Security asks a question.","Ha liquidi nel bagaglio?","Answer clearly.",["sì / no","ho"],["sì","no","liquid"],"Answer yes/no first, then explain if needed."],
+["🌊 Beach","You're renting an umbrella.","Per quante persone?","Say how many people and ask the daily price.",["siamo","quanto costa"],["persone","siamo","costa"],"Answer the number, then ask the price."],
+["🛒 Market","A vendor offers fruit.","Vuole assaggiare?","Accept or decline politely.",["volentieri","no grazie"],["volentieri","grazie","no"],"«Volentieri!» is a very natural acceptance."],
+["🛒 Market","You're buying tomatoes.","Quanti ne vuole?","Ask for one kilo.",["un chilo","per favore"],["chilo","per favore"],"Use «Ne vorrei un chilo, per favore.»"],
+["🚕 Taxi","The driver asks your destination.","Dove deve andare?","Tell the driver where you need to go.",["devo andare","vorrei andare"],["andare","hotel","stazione","centro"],"Try «Devo andare…» or «Mi porta…?»"],
+["🚕 Taxi","Traffic is heavy.","Ha fretta?","Say whether you're in a hurry and why.",["sì/no","perché"],["fretta","perché","treno","appuntamento"],"Answer first, then explain."],
+["💼 Work","A new colleague asks.","Che lavoro fai?","Explain your work simply in 2–3 sentences.",["lavoro","mi occupo di"],["lavor","occupo","azienda"],"Upgrade «faccio» to «mi occupo di…» when appropriate."],
+["🏠 Daily life","A friend asks about your evening.","Cosa fai stasera?","Describe your plan.",["stasera","vado / resto"],["stasera","vado","resto","farò"],"Give the plan first, then one detail."],
+["📅 Plans","A friend invites you out.","Sei libero domani sera?","Accept or decline and suggest a plan.",["sì/no","possiamo"],["domani","possiamo","libero"],"Use «Possiamo…» to move the conversation forward."],
+["🍕 Food","Someone asks your preference.","Qual è il tuo piatto italiano preferito?","Name it and explain why.",["preferito","perché"],["preferit","perché","piace"],"Avoid stopping after the name—add one reason."],
+["🇮🇹 Travel","An Italian asks about your trip.","Quale città vuoi visitare?","Name a city and explain why.",["vorrei visitare","perché"],["visit","andare","perché"],"Try «Vorrei visitare… perché…»"],
+["🌦 Weather","It's raining heavily.","Che tempo fa da te?","Describe the weather and how it affects your plans.",["piove","quindi"],["piov","tempo","quindi","resto"],"Connect weather to consequence with «quindi»."],
+["📞 Phone","You call a restaurant.","Come posso aiutarla?","Ask if they have a table for four tonight.",["avete un tavolo","per quattro"],["tavolo","quattro","stasera","prenot"],"Try: «Avete un tavolo per quattro stasera?»"]
+].map((x,i)=>({id:i,scene:x[0],context:x[1],q:x[2],instruction:x[3],tags:x[4],keys:x[5],model:x[6]}));
+
+const FOLLOWUPS={
+"Café":[["E da bere?","Add a drink to your order.",["bere","caffè","acqua","vino"]],["Qui o da portare?","Say whether you're staying or taking it away.",["qui","portare"]]],
+"Restaurant":[["Desidera qualcos'altro?","Respond politely.",["grazie","vorrei","basta"]],["Perché?","Give one clear reason.",["perché"]]],
+"Train":[["A che ora vuole partire?","Give a time or part of day.",["mattina","pomeriggio","sera","ora"]],["Ha già il biglietto?","Answer and add one detail.",["sì","no","biglietto"]]],
+"Hotel":[["Per quante notti?","Say how many nights.",["nott"]],["Posso fare altro?","Thank them or make one more request.",["grazie","potrebbe","vorrei"]]],
+"Meeting someone":[["Da quanto tempo studi?","Say how long you've studied Italian.",["mese","anno","tempo"]],["Sei già stato in Italia?","Answer and give one detail.",["sì","no","italia"]]],
+"Work":[["Ti piace il tuo lavoro?","Answer and explain why.",["piace","perché"]],["Qual è la parte più difficile?","Name one difficult part.",["diffic","parte"]]]
 };
 const RULES=[
- {re:/\bsono\s+\w+(ando|endo)\b/i,title:"stare + gerundio",detail:"For an action happening now, use sto/stai/sta + gerundio, not sono + gerundio."},
- {re:/\bdipende\s+di\b/i,title:"dipende da",detail:"Use dipende da, not dipende di."},
- {re:/\bsiamo\s+andato\b/i,title:"siamo andati",detail:"With essere, make the participle agree: siamo andati/andate."},
- {re:/\binteressat[oaie]\s+di\b/i,title:"interessato a",detail:"Use interessato a."},
- {re:/\bpenso\s+di\s+che\b/i,title:"penso che",detail:"Use penso che + clause."},
- {re:/\bho\s+(andato|arrivato|partito|venuto|tornato)\b/i,title:"Use essere",detail:"These movement verbs normally use essere: sono andato, sono arrivato, etc."}
+[/\bsono\s+\w+(ando|endo)\b/i,"Use stare + gerundio","For an action happening now: «sto aspettando», not «sono aspettando»."],
+[/\bdipende\s+di\b/i,"dipende da","Italian uses «dipende da»."],
+[/\bsiamo\s+andato\b/i,"siamo andati","With essere, the participle agrees: «siamo andati/andate»."],
+[/\bpenso\s+di\s+che\b/i,"penso che","Use «penso che» + clause."],
+[/\bho\s+(andato|arrivato|partito|venuto|tornato)\b/i,"Use essere","Use «sono andato/arrivato/partito/venuto/tornato»."]
 ];
+const UPG={"fare":["occuparmi di","preparare","creare"],"andare":["tornare","arrivare","partire"],"molto":["davvero","parecchio","particolarmente"],"buono":["ottimo","gustoso","piacevole"],"bello":["interessante","splendido","piacevole"],"mi piace":["preferisco","adoro","mi interessa"],"penso che":["secondo me","direi che","mi sembra che"]};
+const MODES={"Quick Play":"Short real-life situations","Rapid Fire":"Fast retrieval","Conversation":"Longer 1–3 minute speech"};
+const DEF={min:0,words:0,xp:0,resp:[],flow:[],hist:[],comfort:{},unlocked:[],today:{},model:"base",cityProgress:{Roma:0,Napoli:0,Sicilia:0}};
+let S=JSON.parse(localStorage.getItem("sq8")||JSON.stringify(DEF));Object.keys(DEF).forEach(k=>S[k]===undefined&&(S[k]=DEF[k]));
+let mode="Quick Play",current=null,used=[],media=null,stream=null,chunks=[],blob=null,tInt=null,start=0,dur=0,recId=0,lastLog=-1,busy=false,transcriber=null,loaded="",metrics=null,first=null,retrying=false,adventure=null,turn=0;
 
-const defaultState={minutes:0,words:0,xp:0,responseTimes:[],flow:[],history:[],comfort:{},unlocked:[],model:"base",today:{}};
-let state=JSON.parse(localStorage.getItem("sq7")||JSON.stringify(defaultState));
-for(const [k,v] of Object.entries(defaultState))if(state[k]===undefined)state[k]=v;
-
-let mode="Quick Play", pool=QUICK, current=null, index=0, mediaRecorder=null, stream=null, chunks=[], audioBlob=null;
-let timerInt=null,startMs=0,duration=0,recordingId=0,lastLogged=-1,transcriber=null,loadedModel="",analysis=null;
-let attemptOne=null,isRetry=false,busy=false,adventureContext=null;
-
-function save(){localStorage.setItem("sq7",JSON.stringify(state));renderStats()}
-function words(text){return (text.toLowerCase().match(/[a-zàèéìíòù'-]+/gi)||[])}
-function clamp(x,a,b){return Math.max(a,Math.min(b,x))}
-function fmt(sec){sec=Math.floor(sec);return String(Math.floor(sec/60)).padStart(2,"0")+":"+String(sec%60).padStart(2,"0")}
-function avg(a){return a.length?a.reduce((x,y)=>x+y,0)/a.length:null}
-function todayKey(){return new Date().toLocaleDateString()}
-function setStep(n){["s1","s2","s3"].forEach((id,i)=>$(id).classList.toggle("active",i===n-1))}
-function hardResetRecorder(){
- if(timerInt){clearInterval(timerInt);timerInt=null}
- if(mediaRecorder && mediaRecorder.state==="recording"){try{mediaRecorder.stop()}catch{}}
- if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}
- mediaRecorder=null;chunks=[];audioBlob=null;duration=0;
- $("recordBtn").className="primary";$("recordBtn").textContent="🎙 Start";$("recordBtn").disabled=false;
- $("analyzeBtn").disabled=true;$("audio").classList.add("hidden");$("audio").removeAttribute("src");
- $("timer").textContent="00:00";$("progress").style.display="none";busy=false;
-}
-function resetRound(){
- hardResetRecorder();analysis=null;attemptOne=null;isRetry=false;
- $("feedback").classList.remove("show");$("compare").classList.add("hidden");$("nextBtn").classList.add("hidden");
- $("transcriptBox").classList.remove("show");$("transcript").value="";setStep(1);
-}
-function chooseItem(){
- if(adventureContext){
-   current=adventureContext.items[index%adventureContext.items.length];
- }else{
-   pool=MODES[mode];current=pool[index%pool.length];
- }
- renderQuestion();
-}
-function renderQuestion(){
+function save(){localStorage.setItem("sq8",JSON.stringify(S));stats()}
+const words=t=>(t.toLowerCase().match(/[a-zàèéìòù'-]+/gi)||[]),clamp=(x,a,b)=>Math.max(a,Math.min(b,x)),avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null,key=()=>new Date().toLocaleDateString();
+function step(n){["st1","st2","st3"].forEach((x,i)=>$(x).classList.toggle("on",i===n-1))}
+function resetRecorder(){if(tInt)clearInterval(tInt);tInt=null;if(media&&media.state==="recording")try{media.stop()}catch{};if(stream)stream.getTracks().forEach(x=>x.stop());stream=null;media=null;chunks=[];blob=null;dur=0;busy=false;$("rec").className="primary";$("rec").textContent="🎙 Start";$("rec").disabled=false;$("check").disabled=true;$("audio").classList.add("hidden");$("audio").removeAttribute("src");$("timer").textContent="00:00";$("progress").style.display="none"}
+function resetRound(){resetRecorder();metrics=null;first=null;retrying=false;$("feedback").classList.remove("show");$("compare").classList.add("hidden");$("next").classList.add("hidden");$("transBox").classList.remove("show");step(1)}
+function category(s){return s.scene.replace(/^[^\s]+\s/,"")}
+function pick(){
  resetRound();
- $("modeLabel").textContent=adventureContext?`${adventureContext.icon} Adventure · ${adventureContext.city}`:mode;
- $("sceneContext").textContent=current.scene;
- $("question").textContent=current.q;
- $("instruction").textContent=current.instruction;
- $("helpBadges").innerHTML=current.tags.map(t=>`<span class="badge">${t}</span>`).join("");
- $("status").textContent=current.type==="long"?"Tap record and speak naturally.":"Tap record. Answer naturally in 8–25 seconds.";
+ let candidates=SCENARIOS;
+ if(mode==="Rapid Fire")candidates=SCENARIOS.filter(x=>["Daily life","Food","Travel","Meeting someone","Basketball","Plans"].includes(category(x)));
+ if(mode==="Conversation")candidates=SCENARIOS.filter(x=>["Work","Travel","Basketball","Daily life"].includes(category(x)));
+ const fresh=candidates.filter(x=>!used.includes(x.id));if(!fresh.length)used=[];
+ current=fresh[Math.floor(Math.random()*fresh.length)]||candidates[Math.floor(Math.random()*candidates.length)];used.push(current.id);if(used.length>18)used.shift();turn=0;renderQ()
 }
-function renderModes(){
- $("modeGrid").innerHTML=Object.keys(MODES).map(m=>`<div class="mode ${m===mode&&!adventureContext?"active":""}" data-m="${m}"><b>${m}</b><span>${m==="Quick Play"?"Situations + short answers":m==="Rapid Fire"?"Fast retrieval":"Longer speaking"}</span></div>`).join("");
- document.querySelectorAll(".mode").forEach(el=>el.onclick=()=>{adventureContext=null;mode=el.dataset.m;index=0;renderModes();chooseItem()});
+function renderQ(){
+ $("modeLabel").textContent=adventure?`${adventure.icon} Adventure · ${adventure.city}`:mode;$("scene").textContent=current.scene+" · "+current.context;$("question").textContent=current.q;
+ $("instruction").textContent=mode==="Conversation"?"Speak for 1–3 minutes. Detailed coaching comes after the recording.":current.instruction+" Aim for 8–25 seconds.";
+ $("tags").innerHTML=current.tags.map(x=>`<span class="badge">${x}</span>`).join("");$("status").textContent="Answer naturally. Short and useful beats long and perfect."
 }
-async function startRecording(){
- if(busy)return;
- if(mediaRecorder&&mediaRecorder.state==="recording"){mediaRecorder.stop();return}
- hardResetRecorder();
- try{
-   stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:false,autoGainControl:true}});
-   const types=["audio/mp4","audio/webm;codecs=opus","audio/webm"];
-   const mime=types.find(x=>MediaRecorder.isTypeSupported?.(x))||"";
-   mediaRecorder=mime?new MediaRecorder(stream,{mimeType:mime}):new MediaRecorder(stream);
-   chunks=[];recordingId++;
-   mediaRecorder.ondataavailable=e=>{if(e.data.size)chunks.push(e.data)};
-   mediaRecorder.onstop=()=>{
-     duration=(Date.now()-startMs)/1000;clearInterval(timerInt);timerInt=null;
-     audioBlob=new Blob(chunks,{type:mediaRecorder.mimeType||mime||"audio/mp4"});
-     $("audio").src=URL.createObjectURL(audioBlob);$("audio").classList.remove("hidden");
-     $("recordBtn").className="primary";$("recordBtn").textContent="🎙 Record again";$("analyzeBtn").disabled=false;
-     $("status").textContent="Recorded. Tap Check answer.";if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}
-   };
-   mediaRecorder.start(400);startMs=Date.now();
-   $("recordBtn").className="recording";$("recordBtn").textContent="■ Stop";$("status").textContent="Speak…";
-   timerInt=setInterval(()=>$("timer").textContent=fmt((Date.now()-startMs)/1000),200);
- }catch(e){$("status").textContent="Microphone error: "+(e.message||e)}
+function renderModes(){$("modes").innerHTML=Object.entries(MODES).map(([m,d])=>`<div class="mode ${m===mode&&!adventure?"active":""}" data-m="${m}"><b>${m}</b><span>${d}</span></div>`).join("");document.querySelectorAll("[data-m]").forEach(x=>x.onclick=()=>{adventure=null;mode=x.dataset.m;renderModes();pick()})}
+async function record(){
+ if(busy)return;if(media&&media.state==="recording"){media.stop();return}resetRecorder();
+ try{stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:false,autoGainControl:true}});let types=["audio/mp4","audio/webm;codecs=opus","audio/webm"],mime=types.find(x=>MediaRecorder.isTypeSupported?.(x))||"";media=mime?new MediaRecorder(stream,{mimeType:mime}):new MediaRecorder(stream);chunks=[];recId++;
+ media.ondataavailable=e=>e.data.size&&chunks.push(e.data);media.onstop=()=>{dur=(Date.now()-start)/1000;clearInterval(tInt);blob=new Blob(chunks,{type:media.mimeType||mime||"audio/mp4"});$("audio").src=URL.createObjectURL(blob);$("audio").classList.remove("hidden");$("rec").className="primary";$("rec").textContent="🎙 Record again";$("check").disabled=false;$("status").textContent="Recorded. Check your answer.";stream?.getTracks().forEach(x=>x.stop());stream=null};
+ media.start(400);start=Date.now();$("rec").className="red";$("rec").textContent="■ Stop";$("status").textContent="Speak…";tInt=setInterval(()=>$("timer").textContent=new Date(Date.now()-start).toISOString().substring(14,19),200)
+ }catch(e){$("status").textContent="Microphone error: "+e.message}
 }
-async function decode(blob){
- const arr=await blob.arrayBuffer(),Ctx=window.AudioContext||window.webkitAudioContext,ctx=new Ctx();
- const buf=await ctx.decodeAudioData(arr.slice(0)),mono=new Float32Array(buf.length);
- for(let c=0;c<buf.numberOfChannels;c++){const d=buf.getChannelData(c);for(let i=0;i<d.length;i++)mono[i]+=d[i]/buf.numberOfChannels}
- const out={samples:mono,rate:buf.sampleRate,duration:buf.duration};await ctx.close();return out;
+async function decode(b){let a=await b.arrayBuffer(),C=window.AudioContext||window.webkitAudioContext,c=new C(),buf=await c.decodeAudioData(a.slice(0)),m=new Float32Array(buf.length);for(let ch=0;ch<buf.numberOfChannels;ch++){let d=buf.getChannelData(ch);for(let i=0;i<d.length;i++)m[i]+=d[i]/buf.numberOfChannels}let o={s:m,r:buf.sampleRate,d:buf.duration};await c.close();return o}
+function audioMetrics(s,r){let ms=50,n=Math.round(r*ms/1000),rms=[];for(let i=0;i<s.length;i+=n){let z=0,c=0;for(let j=i;j<Math.min(i+n,s.length);j++){z+=s[j]*s[j];c++}rms.push(Math.sqrt(z/c))}let sort=[...rms].sort((a,b)=>a-b),noise=sort[Math.floor(sort.length*.15)]||0,mx=Math.max(...rms,0),th=Math.max(.006,Math.min(.028,noise*2.6,mx*.11)),v=rms.map(x=>x>=th),gap=Math.round(650/ms),gs=null;for(let i=0;i<=v.length;i++){if(i<v.length&&!v[i]&&gs===null)gs=i;if((i===v.length||v[i])&&gs!==null){if(i-gs<=gap&&gs>0&&i<v.length)for(let k=gs;k<i;k++)v[k]=true;gs=null}}let response=0;for(let i=0;i<v.length;i++)if(v[i]){response=i*ms/1000;break}let bursts=[],bs=null,pauses=[],ps=null;for(let i=0;i<=v.length;i++){if(i<v.length&&v[i]&&bs===null)bs=i;if((i===v.length||!v[i])&&bs!==null){bursts.push((i-bs)*ms/1000);bs=null}if(i<v.length&&!v[i]&&ps===null)ps=i;if((i===v.length||v[i])&&ps!==null){if(ps>1&&i<v.length-1)pauses.push((i-ps)*ms/1000);ps=null}}return{response,flow:Math.max(...bursts,0),long:pauses.filter(x=>x>=1.5).length}}
+function resample(x,a,b=16000){if(a===b)return x;let ratio=a/b,len=Math.round(x.length/ratio),o=new Float32Array(len);for(let i=0;i<len;i++){let p=i*ratio,j=Math.floor(p),k=Math.min(j+1,x.length-1),f=p-j;o[i]=x[j]*(1-f)+x[k]*f}return o}
+function prog(p,t){$("progress").style.display="block";$("fill").style.width=p+"%";$("pct").textContent=p+"%";$("progText").textContent=t}
+async function getWhisper(){let mdl=S.model==="tiny"?"Xenova/whisper-tiny":"Xenova/whisper-base";if(transcriber&&loaded===mdl)return transcriber;prog(30,"Loading local Italian speech model…");let mod=await import("https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1/+esm");transcriber=await mod.pipeline("automatic-speech-recognition",mdl,{dtype:"q8"});loaded=mdl;return transcriber}
+async function check(){
+ if(!blob||busy)return;busy=true;$("check").disabled=true;$("skip").disabled=true;step(2);
+ try{prog(10,"Reading your original audio…");let d=await decode(blob),am=audioMetrics(d.s,d.r);prog(25,"Measuring response speed and flow…");let text="";try{let tr=await getWhisper();prog(60,"Transcribing what you actually said…");let o=await tr(resample(d.s,d.r),{language:"italian",task:"transcribe",chunk_length_s:20,stride_length_s:3});text=(o.text||"").trim()}catch(e){console.error(e)}prog(88,"Building useful feedback…");$("transcript").value=text;let result=evaluate(text,am);show(result,true);prog(100,"Done");setTimeout(()=>$("progress").style.display="none",400)}catch(e){console.error(e);$("status").textContent="Analysis failed. Try a shorter recording."}finally{busy=false;$("check").disabled=false;$("skip").disabled=false}
 }
-function audioMetrics(samples,rate){
- const frameMs=50,size=Math.max(1,Math.round(rate*frameMs/1000)),rms=[];
- for(let i=0;i<samples.length;i+=size){let s=0,n=0;for(let j=i;j<Math.min(i+size,samples.length);j++){s+=samples[j]*samples[j];n++}rms.push(Math.sqrt(s/Math.max(1,n)))}
- const sorted=[...rms].sort((a,b)=>a-b),noise=sorted[Math.floor(sorted.length*.15)]||0,max=Math.max(...rms,0);
- const th=Math.max(.006,Math.min(.028,noise*2.6,max*.11));
- let voice=rms.map(x=>x>=th);
- // Fill micro-gaps <= 650 ms so natural syllable gaps don't break flow.
- const maxGap=Math.round(650/frameMs);
- let gs=null;
- for(let i=0;i<=voice.length;i++){
-   if(i<voice.length&&!voice[i]&&gs===null)gs=i;
-   if((i===voice.length||voice[i])&&gs!==null){
-     if(i-gs<=maxGap && gs>0 && i<voice.length){for(let k=gs;k<i;k++)voice[k]=true}
-     gs=null;
-   }
- }
- let first=0;for(let i=0;i<voice.length;i++){if(voice[i]){first=i*frameMs/1000;break}}
- let bursts=[],bs=null,pauses=[],ps=null;
- for(let i=0;i<=voice.length;i++){
-   if(i<voice.length&&voice[i]&&bs===null)bs=i;
-   if((i===voice.length||!voice[i])&&bs!==null){bursts.push((i-bs)*frameMs/1000);bs=null}
-   if(i<voice.length&&!voice[i]&&ps===null)ps=i;
-   if((i===voice.length||voice[i])&&ps!==null){if(ps>1&&i<voice.length-1)pauses.push((i-ps)*frameMs/1000);ps=null}
- }
- return {response:first,flow:bursts.length?Math.max(...bursts):0,longPauses:pauses.filter(x=>x>=1.5).length,longestPause:pauses.length?Math.max(...pauses):0,silence:pauses.reduce((a,b)=>a+b,0)};
+function evaluate(text,a){
+ let w=words(text),low=text.toLowerCase(),hits=current.keys.filter(k=>low.includes(k)).length,under=current.keys.length?clamp(5+hits/current.keys.length*5,5,10):clamp(6+w.length/12,6,10);
+ let rule=RULES.find(r=>r[0].test(text)),italian=clamp(9.3-(rule?2:0)-(w.length<3?1.2:0),4,10),connect=["perché","quindi","però","mentre","invece","poi","secondo me"].filter(x=>low.includes(x)).length;
+ let natural=clamp(7.6+Math.min(1.7,connect*.55)+(hits>1?.5:0),5,10),flow=clamp(9.6-a.response*.55-a.long*.65+(a.flow>8?.4:0),4,10);
+ let comfort=null;for(let [term,opts] of Object.entries(UPG)){let m=low.match(new RegExp("\\b"+term.replace(" ","\\s+")+"\\b","gi"));if(m&&m.length>=3){comfort={term,count:m.length,opts};break}}
+ let worked=hits?`You communicated ${hits>1?"multiple key ideas":"the key idea"} needed for this situation.`:`You produced a spoken response and stayed engaged with the situation.`;
+ if(a.response<2.5)worked+=` You started quickly (${a.response.toFixed(1)}s).`;if(a.long===0)worked+=" You avoided long pauses.";
+ let improve,naturalText,challenge;
+ if(rule){improve=`I detected a likely grammar pattern to fix: ${rule[1]}. ${rule[2]}`;naturalText=`Keep the meaning, but rebuild that sentence using: ${rule[1]}.`;challenge=`Retry and use the corrected structure once.`}
+ else if(hits===0&&current.keys.length){improve=`I couldn't confidently detect the key response idea. For this situation, include something like: ${current.tags.join(" / ")}.`;naturalText=`Model direction: ${current.model}`;challenge=`Retry with a direct first sentence, then add one detail.`}
+ else if(comfort){improve=`Your answer works, but you repeated “${comfort.term}” ${comfort.count} times.`;naturalText=`Try one alternative: ${comfort.opts.join(" · ")}.`;challenge=`Retry and replace “${comfort.term}” at least once.`}
+ else if(a.long>=2){improve=`You had ${a.long} pauses longer than 1.5 seconds. Keep the floor instead of searching for a perfect sentence.`;naturalText=`Use a rescue phrase: «${RESCUE[0]}» or «${RESCUE[2]}»`;challenge=`Retry with no more than one long pause.`}
+ else{improve=`No high-confidence error is worth interrupting you for. Your next gain is making the response a little richer or more natural.`;naturalText=`${current.model}`;challenge=`Retry once using the model direction without memorizing it word-for-word.`}
+ let overall=clamp(under*.34+italian*.25+natural*.21+flow*.20,1,10);
+ if(hits>=2&&!rule&&a.long===0)overall=Math.max(overall,9.0);
+ return{text,w:w.length,a,under:+under.toFixed(1),italian:+italian.toFixed(1),natural:+natural.toFixed(1),flowScore:+flow.toFixed(1),overall:+overall.toFixed(1),worked,improve,naturalText,challenge,comfort}
 }
-function resample(input,inRate,outRate=16000){
- if(inRate===outRate)return input;const ratio=inRate/outRate,len=Math.round(input.length/ratio),out=new Float32Array(len);
- for(let i=0;i<len;i++){const x=i*ratio,a=Math.floor(x),b=Math.min(a+1,input.length-1),f=x-a;out[i]=input[a]*(1-f)+input[b]*f}return out;
+function show(d,log){
+ $("feedback").classList.add("show");$("overall").textContent=d.overall.toFixed(1);$("verdict").textContent=d.overall>=9?"Excellent — clear Italian":d.overall>=8?"Success — understood":d.overall>=7?"Understandable — improve one thing":"Retry for clarity";$("summary").textContent=d.overall>=8.5?"This response works in the real situation.":"Use the feedback below for one immediate retry.";
+ $("gUnderstand").textContent=d.under;$("gItalian").textContent=d.italian;$("gNatural").textContent=d.natural;$("gFlow").textContent=d.flowScore;$("worked").textContent=d.worked;$("improve").textContent=d.improve;$("natural").textContent=d.naturalText;$("challenge").textContent=d.challenge;
+ if(!retrying){first=d;$("next").classList.add("hidden");step(2)}else{step(3);$("next").classList.remove("hidden");compare(first,d)}
+ if(log&&recId!==lastLog){lastLog=recId;let mins=dur/60;S.min+=mins;S.words+=d.w;S.xp+=Math.round(12+d.w/4);S.resp.push(d.a.response);S.flow.push(d.a.flow);S.today[key()]=(S.today[key()]||0)+mins;if(d.comfort){S.comfort[d.comfort.term]=(S.comfort[d.comfort.term]||0)+d.comfort.count;d.comfort.opts.forEach(x=>!S.unlocked.includes(x)&&S.unlocked.push(x))}S.hist.push({date:key(),mode:adventure?`Adventure ${adventure.city}`:mode,score:d.overall,w:d.w,r:d.a.response,f:d.a.flow,retry:retrying});S.hist=S.hist.slice(-100);save()}
+ $("status").textContent=retrying?"Retry scored. Compare and continue.":"Review the three short feedback boxes, then retry."
 }
-async function getTranscriber(){
- const choice=state.model||"base",model=choice==="tiny"?"Xenova/whisper-tiny":"Xenova/whisper-base";
- if(transcriber&&loadedModel===model)return transcriber;
- $("progressTitle").textContent="Loading speech model…";setProgress(35,"First use may take longer. Better accuracy is intentionally prioritized.");
- const mod=await import("https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1/+esm");
- transcriber=await mod.pipeline("automatic-speech-recognition",model,{dtype:"q8"});loadedModel=model;return transcriber;
+function compare(a,b){$("compare").classList.remove("hidden");let g=b.overall-a.overall;$("compare").innerHTML=`<div class="fb good"><div class="label">IMPROVEMENT</div><h3>${g>=0?"+":""}${g.toFixed(1)} points</h3><div>${a.overall.toFixed(1)} → <b>${b.overall.toFixed(1)}</b> · Response ${a.a.response.toFixed(1)}s → ${b.a.response.toFixed(1)}s · Flow ${a.a.flow.toFixed(1)}s → ${b.a.flow.toFixed(1)}s</div></div>`}
+function retry(){if(!first)return;resetRecorder();retrying=true;$("feedback").classList.remove("show");$("transBox").classList.remove("show");$("status").textContent="Same situation. Apply the ONE change and answer again.";step(3);scrollTo({top:0,behavior:"smooth"})}
+function next(){
+ if(adventure){turn++;let cat=category(current),fs=FOLLOWUPS[cat]||[];if(turn<=fs.length){let f=fs[turn-1];current={...current,q:f[0],instruction:f[1],keys:f[2],tags:f[2].slice(0,2),model:"Answer directly, then add one natural detail."};resetRound();renderQ();return}S.cityProgress[adventure.city]=(S.cityProgress[adventure.city]||0)+1;save()}
+ pick()
 }
-function setProgress(p,detail){$("progress").style.display="block";$("progressFill").style.width=p+"%";$("progressPct").textContent=p+"%";if(detail)$("progressDetail").textContent=detail}
-async function analyzeAnswer(){
- if(!audioBlob||busy)return;busy=true;$("analyzeBtn").disabled=true;$("skipBtn").disabled=true;setStep(2);
- try{
-   setProgress(10,"Reading the original recording.");
-   const dec=await decode(audioBlob);const am=audioMetrics(dec.samples,dec.rate);setProgress(25,"Measuring response start, pauses and flow.");
-   const pcm=resample(dec.samples,dec.rate);
-   let text="";
-   try{
-     const tr=await getTranscriber();setProgress(60,"Transcribing your actual recording.");
-     const out=await tr(pcm,{language:"italian",task:"transcribe",chunk_length_s:20,stride_length_s:3});
-     text=(out.text||"").trim();
-   }catch(e){
-     console.error(e);setProgress(70,"Transcription unavailable. Audio metrics still work.");
-   }
-   setProgress(90,"Choosing one useful improvement.");
-   $("transcript").value=text;
-   analysis=scoreAttempt(text,am);
-   showFeedback(analysis,true);
-   setProgress(100,"Done.");setTimeout(()=>$("progress").style.display="none",450);
- }catch(e){console.error(e);$("status").textContent="Could not analyze this recording. Try a shorter answer.";setProgress(0,"")}
- finally{busy=false;$("analyzeBtn").disabled=false;$("skipBtn").disabled=false}
-}
-function scoreAttempt(text,audio){
- const ws=words(text),wc=ws.length,lower=text.toLowerCase();
- const rule=RULES.find(r=>r.re.test(text));
- let comfort=null;
- for(const [term,opts] of Object.entries(UPGRADES)){
-   const re=new RegExp("\\b"+term.replace(" ","\\s+")+"\\b","gi"),m=lower.match(re);
-   if(m&&m.length>=3){comfort={term,count:m.length,opts};break}
- }
- const intentHits=(current.intent||[]).filter(r=>r.test(text)).length;
- const understood=current.intent.length===0?wc>=12:intentHits>0;
- const connectors=CONNECT.filter(x=>lower.includes(x)).length;
- const responseScore=clamp(10-audio.response*.7,4,10);
- const flowScore=clamp(5+audio.flow/5-audio.longPauses*.8,3,10);
- const langScore=clamp(6+(understood?2:0)+Math.min(1.5,connectors*.4)-(rule?1.2:0),3,10);
- const score=+(responseScore*.3+flowScore*.3+langScore*.4).toFixed(1);
- let coach;
- if(rule)coach={kind:"FIX IT",cls:"fix",title:rule.title,detail:rule.detail,retry:"Retry and use the corrected pattern."};
- else if(comfort)coach={kind:"UPGRADE IT",cls:"",title:`${comfort.term} × ${comfort.count}`,detail:`Correct, but repetitive. Try: ${comfort.opts.join(" · ")}.`,retry:`Retry using one alternative instead of “${comfort.term}”.`,comfort};
- else if(!understood)coach={kind:"MAKE IT CLEAR",cls:"fix",title:"Answer the situation directly",detail:"SpeakQuest could not confidently detect the key idea. Keep the reply simple and directly answer the question.",retry:"Retry with one short, direct answer first; then add detail."};
- else if(audio.longPauses>=2)coach={kind:"FLOW IT",cls:"",title:`${audio.longPauses} long pauses`,detail:`Use a rescue phrase instead of going silent: ${RESCUE.slice(0,2).join(" · ")}`,retry:"Retry and keep the floor when you get stuck."};
- else coach={kind:"KEEP IT",cls:"keep",title:"Clear and understandable",detail:"Your answer was direct enough for the situation. Repeat it once, slightly faster and smoother.",retry:"Retry and improve speed or flow."};
- return {text,wc,audio,understood,score,coach};
-}
-function showFeedback(d,log){
- $("feedback").classList.add("show");$("score").textContent=d.score+"/10";$("resultTitle").textContent=d.understood?"✓ Understandable response":"Needs clearer response";
- $("resultSummary").textContent=d.understood?"You communicated the main idea.":"Keep the next attempt shorter and more direct.";
- $("mResponse").textContent=d.audio.response.toFixed(1)+"s";$("mFlow").textContent=d.audio.flow.toFixed(1)+"s";$("mWords").textContent=d.wc;$("mPauses").textContent=d.audio.longPauses;
- $("coachBox").className="coach "+d.coach.cls;$("coachType").textContent=d.coach.kind;$("coachTitle").textContent=d.coach.title;$("coachDetail").textContent=d.coach.detail;
- $("retryBtn").textContent="🔁 "+d.coach.retry;
- if(!isRetry){attemptOne=d;$("nextBtn").classList.add("hidden");setStep(2)}
- else{
-   setStep(3);$("nextBtn").classList.remove("hidden");renderComparison(attemptOne,d);
- }
- if(log&&recordingId!==lastLogged){
-   lastLogged=recordingId;const mins=duration/60;state.minutes+=mins;state.words+=d.wc;state.xp+=Math.round(10+d.wc/5);
-   state.responseTimes.push(d.audio.response);state.flow.push(d.audio.flow);
-   if(d.coach.comfort){state.comfort[d.coach.comfort.term]=(state.comfort[d.coach.comfort.term]||0)+d.coach.comfort.count;d.coach.comfort.opts.forEach(x=>{if(!state.unlocked.includes(x))state.unlocked.push(x)})}
-   state.history.push({date:todayKey(),mode:adventureContext?`Adventure ${adventureContext.city}`:mode,score:d.score,words:d.wc,response:d.audio.response,flow:d.audio.flow,retry:isRetry});
-   state.history=state.history.slice(-80);state.today[todayKey()]=(state.today[todayKey()]||0)+mins;save()
- }
- $("status").textContent=isRetry?"Retry scored. Compare it, then move on.":"You only get one coaching point. Retry it immediately.";
-}
-function renderComparison(a,b){
- const gain=b.score-a.score,resp=a.audio.response-b.audio.response,flow=b.audio.flow-a.audio.flow;
- $("compare").classList.remove("hidden");
- $("compare").innerHTML=`<div class="kicker" style="color:var(--green)">Attempt 1 → Retry</div>
- <h3 style="margin:5px 0">Improvement ${gain>=0?"+":""}${gain.toFixed(1)}</h3>
- <div class="metrics"><div class="metric"><b>${a.audio.response.toFixed(1)}→${b.audio.response.toFixed(1)}s</b><span>response</span></div>
- <div class="metric"><b>${a.audio.flow.toFixed(1)}→${b.audio.flow.toFixed(1)}s</b><span>flow</span></div>
- <div class="metric"><b>${a.wc}→${b.wc}</b><span>words</span></div>
- <div class="metric"><b>${a.audio.longPauses}→${b.audio.longPauses}</b><span>long pauses</span></div></div>`;
-}
-function retrySame(){
- if(!attemptOne)return;hardResetRecorder();isRetry=true;analysis=null;$("feedback").classList.remove("show");$("compare").classList.add("hidden");$("transcriptBox").classList.remove("show");
- $("status").textContent="Same situation. Apply ONE fix and answer again.";setStep(3);window.scrollTo({top:0,behavior:"smooth"});
-}
-function nextSituation(){index++;isRetry=false;attemptOne=null;chooseItem()}
-function recheck(){
- if(!analysis)return;const txt=$("transcript").value.trim();analysis=scoreAttempt(txt,analysis.audio);showFeedback(analysis,false);
- $("status").textContent="Transcript corrected. Feedback updated without counting another attempt.";
-}
-function skip(){if(busy)return;index++;chooseItem()}
-function renderStats(){
- $("topMin").textContent=Math.round(state.minutes);$("topWords").textContent=state.words;
- const ar=avg(state.responseTimes.slice(-30));$("topResponse").textContent=ar?ar.toFixed(1)+"s":"—";$("topFlow").textContent=state.flow.length?Math.max(...state.flow).toFixed(0)+"s":"—";
- $("dMin").textContent=Math.round(state.minutes)+" min";$("dWords").textContent=state.words;$("dResponse").textContent=ar?ar.toFixed(1)+"s":"—";$("dFlow").textContent=state.flow.length?Math.max(...state.flow).toFixed(0)+"s":"—";
- const t=state.today[todayKey()]||0,p=Math.min(100,Math.round(t/60*100));$("todayText").textContent=`${Math.round(t)} / 60 min`;$("todayPct").textContent=p+"%";$("todayFill").style.width=p+"%";
- $("monthTitle").textContent=new Date().toLocaleString(undefined,{month:"long",year:"numeric"});
- const comfort=Object.entries(state.comfort).sort((a,b)=>b[1]-a[1]).slice(0,5),un=state.unlocked.slice(-8);
- $("growth").innerHTML=`<p><b>Comfort words:</b> ${comfort.length?comfort.map(([w,n])=>`${w} (${n})`).join(" · "):"building your profile…"}</p><p><b>Upgrades unlocked:</b> ${un.length?un.join(" · "):"complete a few retries to unlock alternatives"}</p>`;
- $("history").innerHTML=state.history.length?state.history.slice(-10).reverse().map(h=>`<div class="quest"><b>${h.mode}${h.retry?" · Retry":""}</b> · ${h.score}/10 · ${h.words} words · ${h.response.toFixed(1)}s start · ${h.flow.toFixed(1)}s flow<div class="small muted">${h.date}</div></div>`).join(""):"No attempts yet.";
-}
-function renderAdventure(){
- $("adventureList").innerHTML=ADVENTURE.map(a=>`<div class="quest ${state.xp<a.unlock?"locked":""}"><div class="row"><div><b>${a.icon} ${a.city}</b><div class="small muted">${a.desc}</div></div><button class="${state.xp>=a.unlock?"secondary":"ghost"}" ${state.xp<a.unlock?"disabled":""} data-city="${a.city}">${state.xp>=a.unlock?"Enter":`🔒 ${a.unlock} XP`}</button></div></div>`).join("");
- document.querySelectorAll("[data-city]").forEach(b=>b.onclick=()=>{const a=ADVENTURE.find(x=>x.city===b.dataset.city);adventureContext=a;index=0;document.querySelector('[data-screen="play"]').click();renderModes();chooseItem()});
-}
-function switchScreen(id){
- hardResetRecorder();document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));$(id).classList.add("active");
- document.querySelectorAll(".nav button").forEach(x=>x.classList.toggle("active",x.dataset.screen===id));
- if(id==="adventure")renderAdventure();if(id==="dashboard")renderStats();
-}
-$("recordBtn").onclick=startRecording;$("analyzeBtn").onclick=analyzeAnswer;$("skipBtn").onclick=skip;$("retryBtn").onclick=retrySame;$("nextBtn").onclick=nextSituation;$("recheckBtn").onclick=recheck;
-$("transcriptToggle").onclick=()=>$("transcriptBox").classList.toggle("show");
-document.querySelectorAll(".nav button").forEach(b=>b.onclick=()=>switchScreen(b.dataset.screen));
-$("modelChoice").value=state.model;$("modelChoice").onchange=e=>{state.model=e.target.value;transcriber=null;loadedModel="";save()};
-$("resetBtn").onclick=()=>{if(confirm("Reset all SpeakQuest progress on this device?")){localStorage.removeItem("sq7");location.reload()}};
-$("rescueList").innerHTML=RESCUE.map(x=>`<span class="badge">${x}</span>`).join("");
-$("compat").innerHTML=`Microphone: ${navigator.mediaDevices?.getUserMedia?"✓":"✗"} · MediaRecorder: ${window.MediaRecorder?"✓":"✗"} · Secure page: ${window.isSecureContext?"✓":"✗"}`;
-renderModes();renderStats();chooseItem();
-</script>
-</body>
-</html>
+function recheck(){if(!metrics&&!first)return;let base=retrying?null:first,a=(base||first)?.a;if(!a)return;let d=evaluate($("transcript").value.trim(),a);show(d,false);$("status").textContent="Feedback updated from your corrected transcript. No extra attempt was counted."}
+function stats(){$("hMin").textContent=Math.round(S.min);$("hWords").textContent=S.words;let r=avg(S.resp.slice(-30));$("hResp").textContent=r?r.toFixed(1)+"s":"—";$("hFlow").textContent=S.flow.length?Math.max(...S.flow).toFixed(0)+"s":"—";$("dMin").textContent=Math.round(S.min)+"m";$("dWords").textContent=S.words;$("dResp").textContent=r?r.toFixed(1)+"s":"—";$("dFlow").textContent=S.flow.length?Math.max(...S.flow).toFixed(0)+"s":"—";let t=S.today[key()]||0,p=Math.min(100,Math.round(t/60*100));$("daily").textContent=`${Math.round(t)} / 60 min`;$("dailyPct").textContent=p+"%";$("dailyFill").style.width=p+"%";let cw=Object.entries(S.comfort).sort((a,b)=>b[1]-a[1]).slice(0,5);$("growth").innerHTML=`<p><b>Comfort words:</b> ${cw.length?cw.map(x=>x[0]+" ("+x[1]+")").join(" · "):"building profile…"}</p><p><b>Expressions unlocked:</b> ${S.unlocked.slice(-8).join(" · ")||"complete more rounds"}</p>`;$("history").innerHTML=S.hist.slice(-10).reverse().map(h=>`<div class="quest"><b>${h.mode}</b> · ${h.score.toFixed(1)} · ${h.w} words · ${h.r.toFixed(1)}s response · ${h.f.toFixed(1)}s flow</div>`).join("")||"No results yet."}
+const CITIES=[{city:"Roma",icon:"🏛️",xp:0,cats:["Café","Hotel","Train","Street"]},{city:"Napoli",icon:"🍕",xp:180,cats:["Restaurant","Train","Meeting someone","Food"]},{city:"Sicilia",icon:"🌊",xp:400,cats:["Beach","Market","Travel","Meeting someone"]}];
+function cities(){$("cities").innerHTML=CITIES.map(c=>`<div class="quest ${S.xp<c.xp?"lock":""}"><div class="row"><div><b>${c.icon} ${c.city}</b><div class="small muted">${c.cats.join(" · ")} · ${S.cityProgress[c.city]||0} scenes completed</div></div><button class="${S.xp>=c.xp?"secondary":"ghost"}" ${S.xp<c.xp?"disabled":""} data-city="${c.city}">${S.xp>=c.xp?"Enter":`🔒 ${c.xp} XP`}</button></div></div>`).join("");document.querySelectorAll("[data-city]").forEach(b=>b.onclick=()=>{adventure=CITIES.find(c=>c.city===b.dataset.city);let choices=SCENARIOS.filter(s=>adventure.cats.includes(category(s)));current=choices[Math.floor(Math.random()*choices.length)];turn=0;screen("play");renderModes();resetRound();renderQ()})}
+function screen(id){resetRecorder();document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));$(id).classList.add("active");document.querySelectorAll(".nav button").forEach(x=>x.classList.toggle("on",x.dataset.screen===id));if(id==="adventure")cities();if(id==="dashboard")stats()}
+$("rec").onclick=record;$("check").onclick=check;$("retry").onclick=retry;$("next").onclick=next;$("skip").onclick=pick;$("recheck").onclick=recheck;$("transToggle").onclick=()=>$("transBox").classList.toggle("show");
+document.querySelectorAll(".nav button").forEach(b=>b.onclick=()=>screen(b.dataset.screen));$("model").value=S.model;$("model").onchange=e=>{S.model=e.target.value;transcriber=null;loaded="";save()};$("reset").onclick=()=>{if(confirm("Reset all SpeakQuest v8 progress?")){localStorage.removeItem("sq8");location.reload()}};
+$("rescue").innerHTML=RESCUE.map(x=>`<span class="badge">${x}</span>`).join("");$("compat").textContent=`Microphone ${navigator.mediaDevices?.getUserMedia?"✓":"✗"} · MediaRecorder ${window.MediaRecorder?"✓":"✗"} · Secure page ${window.isSecureContext?"✓":"✗"}`;
+renderModes();stats();pick();
+</script></body></html>
