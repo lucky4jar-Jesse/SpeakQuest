@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#07101e">
-<title>SpeakQuest v5.1 — Speaking Engine — Italian Speaking RPG</title>
+<title>SpeakQuest v6 — Output Engine — Italian Speaking RPG</title>
 <style>
 :root{--bg:#07101e;--panel:#101b30;--panel2:#152541;--line:#263b60;--txt:#f4f8ff;--muted:#93a4c3;--cyan:#4dd4ff;--green:#45e3aa;--yellow:#ffd66b;--purple:#a786ff;--red:#ff7180}
 *{box-sizing:border-box} html,body{margin:0;background:radial-gradient(circle at 15% 0,#112848 0,transparent 32%),var(--bg);color:var(--txt);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
@@ -36,7 +36,7 @@ audio{width:100%;margin-top:12px}textarea{width:100%;min-height:100px;background
 <body>
 <div class="app">
 <header>
- <div class="brand"><div class="logo">SQ</div><div><h1>SpeakQuest</h1><div class="muted tiny">Italian Speaking RPG · v5.1 · SPEAK → REVIEW → RETRY</div></div></div>
+ <div class="brand"><div class="logo">SQ</div><div><h1>SpeakQuest</h1><div class="muted tiny">Italian Speaking RPG · v6 · SPEAK FIRST · CORRECT SECOND · RETRY</div></div></div>
  <div class="stats"><div class="chip">🔥 <b id="streak">1</b> day streak</div><div class="chip">⚡ <b id="xpTop">0</b> XP</div><div class="chip">🎙 <b id="monthMinTop">0</b> min this month</div></div>
 </header>
 <div class="card" style="padding:12px 15px;margin-bottom:16px">
@@ -82,7 +82,7 @@ audio{width:100%;margin-top:12px}textarea{width:100%;min-height:100px;background
     <div class="result"><div class="muted tiny">Overall speaking score</div><div class="score" id="overall">—</div><div id="summary"></div></div>
     <div class="result"><div class="muted tiny">Transcript</div><div id="transcript">—</div></div>
     <div class="result"><div class="muted tiny">Fix these</div><div id="corrections">—</div></div>
-    <div class="result"><div class="muted tiny">Instant fix strategy</div><div id="natural">—</div></div>
+    <div class="result"><div class="muted tiny">One thing to improve</div><div id="natural">—</div></div>
     <div class="result"><div class="muted tiny">Score breakdown</div><div id="skills">—</div></div>
     <div class="result"><div class="muted tiny">Fluency details</div><div id="audioMetrics">—</div></div>
     <div class="result"><div class="muted tiny">Retry target</div><div id="coach">—</div></div>
@@ -130,12 +130,12 @@ audio{width:100%;margin-top:12px}textarea{width:100%;min-height:100px;background
  <div class="dashboard-grid">
   <div class="dashbox"><div class="muted tiny">Spoken</div><b id="dMinutes">0 min</b></div>
   <div class="dashbox"><div class="muted tiny">Sessions</div><b id="dSessions">0</b></div>
-  <div class="dashbox"><div class="muted tiny">Average score</div><b id="dScore">—</b></div>
+  <div class="dashbox"><div class="muted tiny">Avg quality score</div><b id="dScore">—</b></div>
   <div class="dashbox"><div class="muted tiny">XP earned</div><b id="dXp">0</b></div>
-  <div class="dashbox"><div class="muted tiny">Words logged</div><b id="dWords">0</b></div>
+  <div class="dashbox"><div class="muted tiny">Words spoken</div><b id="dWords">0</b></div>
   <div class="dashbox"><div class="muted tiny">Unique words</div><b id="dUnique">0</b></div>
-  <div class="dashbox"><div class="muted tiny">Avg WPM</div><b id="dWpm">—</b></div>
-  <div class="dashbox"><div class="muted tiny">Long pauses / min</div><b id="dPauses">—</b></div>
+  <div class="dashbox"><div class="muted tiny">Response speed</div><b id="dResponse">—</b></div>
+  <div class="dashbox"><div class="muted tiny">Best flow streak</div><b id="dFlow">—</b></div>
   <div class="dashbox"><div class="muted tiny">Retry improvement</div><b id="dImprove">—</b></div>
  </div>
  <div class="goal-edit"><input id="goalHours" type="number" min="1" max="200" value="30"><button class="secondary" id="saveGoal">Set monthly hours</button></div>
@@ -148,6 +148,12 @@ audio{width:100%;margin-top:12px}textarea{width:100%;min-height:100px;background
 <div class="card" style="margin-top:18px">
  <div class="kicker">Recent Sessions</div>
  <div id="history" class="prompt" style="margin-top:10px"></div>
+</div>
+
+<div class="card" style="margin-top:18px">
+ <div class="kicker">Language Growth</div>
+ <h3>Your active Italian</h3>
+ <div id="growthSummary" class="prompt" style="margin-top:10px">SpeakQuest will learn which basic words and patterns you rely on, then give you one useful upgrade at a time.</div>
 </div>
 </section>
 
@@ -224,6 +230,10 @@ if(!state.uniqueWords) state.uniqueWords=[];
 if(!state.wpm) state.wpm=[];
 if(!state.pauseRates) state.pauseRates=[];
 if(!state.retryGains) state.retryGains=[];
+if(!state.responseTimes) state.responseTimes=[];
+if(!state.flowStreaks) state.flowStreaks=[];
+if(!state.comfortWords) state.comfortWords={};
+if(!state.unlockedExpressions) state.unlockedExpressions=[];
 function save(){localStorage.setItem("sq_state",JSON.stringify(state));renderStats()}
 function monthLabel(){return new Date().toLocaleString(undefined,{month:"long",year:"numeric"})}
 function renderStats(){
@@ -241,15 +251,23 @@ function renderStats(){
  $("dMinutes").textContent=Math.round(state.minutes)+" min"; $("dSessions").textContent=state.sessions; $("dScore").textContent=avg; $("dXp").textContent=state.xp; $("goalHours").value=state.goalHours;
  if($("dWords")) $("dWords").textContent=state.words||0;
  if($("dUnique")) $("dUnique").textContent=(state.uniqueWords||[]).length;
+ const resp=(state.responseTimes||[]), flows=(state.flowStreaks||[]);
+ if($("dResponse")) $("dResponse").textContent=resp.length?(resp.slice(-20).reduce((a,b)=>a+b,0)/Math.min(20,resp.length)).toFixed(1)+"s":"—";
+ if($("dFlow")) $("dFlow").textContent=flows.length?Math.max(...flows).toFixed(0)+"s":"—";
  const mean=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null;
  const avgW=mean(state.wpm||[]), avgP=mean(state.pauseRates||[]), avgG=mean(state.retryGains||[]);
- if($("dWpm")) $("dWpm").textContent=avgW?Math.round(avgW):"—";
- if($("dPauses")) $("dPauses").textContent=avgP?avgP.toFixed(1):"—";
+ 
  if($("dImprove")) $("dImprove").textContent=avgG!==null?(avgG>=0?"+":"")+avgG.toFixed(1):"—";
  const errEntries=Object.entries(state.errors||{}).sort((a,b)=>b[1]-a[1]).slice(0,6);
  if($("errorMemory")) $("errorMemory").innerHTML=errEntries.length
    ? errEntries.map(([id,n])=>{const r=COMMON_RULES.find(x=>x.id===id);return `<div style="padding:8px 0;border-bottom:1px solid #233756"><b>${escapeHtml(r?r.label:id)}</b> · detected ${n} time${n===1?"":"s"}<div class="tiny muted">${escapeHtml(r?r.fix:"")}</div></div>`}).join("")
    : "No recurring patterns detected yet. Complete several transcript-scored sessions and Tutor Mode will begin building your practice targets.";
+ if($("growthSummary")){
+   const cw=Object.entries(state.comfortWords||{}).sort((a,b)=>b[1]-a[1]).slice(0,4);
+   const unlocked=(state.unlockedExpressions||[]).slice(-6);
+   $("growthSummary").innerHTML=`<b>Comfort words:</b> ${cw.length?cw.map(([w,n])=>`${escapeHtml(w)} (${n})`).join(" · "):"building profile…"}<br>
+   <b>Expressions unlocked:</b> ${unlocked.length?unlocked.map(escapeHtml).join(" · "):"complete a few rounds to unlock upgrades"}`;
+ }
  $("history").innerHTML=state.history.length?state.history.slice(-8).reverse().map(h=>`<div style="padding:9px 0;border-bottom:1px solid #233756"><b>${h.mode}${h.retry?" · Retry":""}</b> · ${h.minutes.toFixed(1)} min · ${h.score}/10${h.wpm?` · ${Math.round(h.wpm)} WPM`:""}${h.longPauses!==undefined?` · ${h.longPauses} long pauses`:""} <span class="muted">— ${h.date}</span></div>`).join(""):"No scored sessions yet.";
 }
 function renderModes(){
@@ -327,6 +345,60 @@ function formatTime(s){s=Math.floor(s);return String(Math.floor(s/60)).padStart(
 const ITALIAN_STOP = new Set(["a","ad","al","alla","alle","allo","ai","agli","anche","che","chi","con","da","dal","dalla","dei","del","della","di","e","ed","è","era","ero","essere","gli","ha","hai","hanno","ho","i","il","in","io","la","le","lo","loro","ma","mi","mia","mie","miei","mio","ne","nel","nella","noi","non","o","per","più","poi","quale","quello","questa","questo","se","si","sono","su","sul","tra","un","una","uno","voi"]);
 const CONNECTORS=["perché","quindi","però","mentre","inoltre","comunque","invece","anche se","secondo me","alla fine","prima","poi","infatti","per esempio","nonostante","magari","allora","cioè","dunque","ecco","diciamo"];
 const HESITATION_FILLERS=["eh","ehm","em","mmm","uh","uhm","um","umm"];
+
+const BASIC_UPGRADES={
+ "fare":["occuparsi di","preparare","creare","svolgere"],
+ "andare":["tornare","partire","arrivare","passare da"],
+ "molto":["davvero","parecchio","particolarmente"],
+ "buono":["ottimo","piacevole","gustoso"],
+ "bello":["splendido","piacevole","interessante"],
+ "mi piace":["preferisco","adoro","mi interessa","mi fa piacere"],
+ "penso che":["secondo me","direi che","mi sembra che"]
+};
+const RESCUE_PHRASES=["Fammi pensare…","Come posso dire…","Quello che voglio dire è…","In altre parole…","Non so come spiegarlo, ma…"];
+
+function comfortWordOpportunity(text){
+ const words=tokenizeItalian(text);
+ const counts={};
+ for(const w of words){
+   if(w.length<4 || ITALIAN_STOP.has(w)) continue;
+   counts[w]=(counts[w]||0)+1;
+ }
+ const phraseCounts={};
+ for(const p of ["mi piace","penso che"]){
+   const matches=text.toLowerCase().match(new RegExp("\\b"+p.replace(" ","\\s+")+"\\b","g"));
+   if(matches) phraseCounts[p]=matches.length;
+ }
+ const candidates=[
+   ...Object.entries(counts).map(([term,count])=>({term,count})),
+   ...Object.entries(phraseCounts).map(([term,count])=>({term,count}))
+ ].filter(x=>x.count>=3 && BASIC_UPGRADES[x.term])
+  .sort((a,b)=>b.count-a.count);
+ if(!candidates.length)return null;
+ const top=candidates[0];
+ return {type:"upgrade",term:top.term,count:top.count,options:BASIC_UPGRADES[top.term].slice(0,3)};
+}
+function chooseOneCoach(d){
+ if(d.corrections && d.corrections.length){
+   return {kind:"FIX IT",color:"var(--red)",title:d.corrections[0].original,
+           detail:d.corrections[0].correction,
+           retry:"Use the corrected pattern at least twice in your retry."};
+ }
+ const up=comfortWordOpportunity(d.transcript||"");
+ if(up){
+   return {kind:"UPGRADE IT",color:"var(--yellow)",title:`${up.term} × ${up.count}`,
+           detail:`Your Italian works, but you leaned on “${up.term}”. Try: ${up.options.join(" · ")}.`,
+           retry:`Retry and use at least one upgrade instead of “${up.term}”.`,upgrade:up};
+ }
+ if(d.audio && d.audio.longPauseCount>=2){
+   return {kind:"FLOW IT",color:"var(--blue)",title:`${d.audio.longPauseCount} long pauses`,
+           detail:`Keep the floor with: ${RESCUE_PHRASES.slice(0,3).join(" · ")}`,
+           retry:"Retry and use a rescue phrase instead of going silent."};
+ }
+ return {kind:"KEEP IT",color:"var(--green)",title:"Strong production",
+         detail:"No major correction is worth interrupting your flow for. Keep this pattern.",
+         retry:"Retry once and make the same answer faster and smoother."};
+}
 const DISCOURSE_FILLERS=["allora","cioè","dunque","ecco","diciamo","praticamente","insomma"];
 const COMMON_RULES=[
  {id:"sono_gerundio",re:/\bsono\s+([a-zàèéìòù]+ando|[a-zàèéìòù]+endo)\b/gi,label:"Use stare + gerundio",fix:"For an action happening now, use sto/stai/sta/stiamo/state/stanno + gerundio, not sono + gerundio."},
@@ -415,11 +487,21 @@ function analyzeWaveform(samples,sampleRate){
  const planningPauses=pauses.filter(p=>p>=1&&p<2);
  const longest=pauses.length?Math.max(...pauses):0;
  const silencePct=duration?internalSilence/duration*100:0;
+ // Estimate response start and longest continuous speaking burst from the same waveform.
+ let firstVoice=0;
+ for(let i=0;i<silent.length;i++){ if(!silent[i]){firstVoice=i*winMs/1000;break;} }
+ let longestSpeech=0, speechStart=null;
+ for(let i=0;i<=silent.length;i++){
+   if(i<silent.length && !silent[i] && speechStart===null) speechStart=i;
+   if((i===silent.length || silent[i]) && speechStart!==null){
+     longestSpeech=Math.max(longestSpeech,(i-speechStart)*winMs/1000);speechStart=null;
+   }
+ }
  return {
    duration, pauses, pauseCount:pauses.length, planningPauseCount:planningPauses.length,
    longPauseCount:longPauses.length,longestPause:longest,silencePct,
    pauseRate:duration?longPauses.length/(duration/60):0,
-   threshold
+   responseTime:firstVoice,longestSpeechBurst:longestSpeech,threshold
  };
 }
 async function ensureWhisper(){
@@ -569,9 +651,14 @@ function showSpeakingResult(d,duration,opts={log:true,edited:false,recordingId:r
  $("summary").textContent=d.summary;
  $("transcript").textContent=d.transcript;
  $("corrections").innerHTML=d.corrections.length
-   ? d.corrections.map(c=>`<div style="margin-bottom:9px"><b>${escapeHtml(c.original)}</b><div>${escapeHtml(c.correction)}</div></div>`).join("")
-   : "No high-priority rule-based grammar error detected. Focus on the fluency fixes below.";
- $("natural").innerHTML=d.fixes.map((x,i)=>`<div style="margin-bottom:7px"><b>${i+1}.</b> ${escapeHtml(x)}</div>`).join("");
+   ? `<div><b>${escapeHtml(d.corrections[0].original)}</b><div>${escapeHtml(d.corrections[0].correction)}</div></div>`
+   : "No high-priority grammar fix detected in this round.";
+ const oneCoach=chooseOneCoach(d);
+ $("natural").innerHTML=`<div style="font-weight:900;color:${oneCoach.color};letter-spacing:.08em;font-size:.78rem">${oneCoach.kind}</div>
+ <div style="font-size:1.08rem;font-weight:900;margin-top:5px">${escapeHtml(oneCoach.title)}</div>
+ <div style="margin-top:6px">${escapeHtml(oneCoach.detail)}</div>`;
+ d.primaryCoach=oneCoach;
+ d.coach_challenge=oneCoach.retry;
  $("skills").innerHTML=`Fluency <b>${d.fluency}/10</b><br>Grammar <b>${d.grammar}/10</b><br>Vocabulary <b>${d.vocabulary}/10</b><br>Mission <b>${d.mission}/10</b><br>Structure <b>${d.structure}/10</b>`;
  $("audioMetrics").innerHTML=metricLine(d);
  $("coach").textContent=d.coach_challenge;
@@ -583,7 +670,7 @@ function showSpeakingResult(d,duration,opts={log:true,edited:false,recordingId:r
    const pauseDelta=attemptOne.audio.longPauseCount-d.audio.longPauseCount;
    const fillerDelta=attemptOne.hesitation-d.hesitation;
    $("comparison").style.display="block";
-   $("comparison").innerHTML=`<div class="kicker" style="color:var(--green)">Attempt 1 → Attempt 2</div>
+   $("comparison").innerHTML=`<div class="kicker" style="color:var(--green)">Improvement Score · Attempt 1 → Attempt 2</div>
     <h3 style="margin-top:7px">Score ${attemptOne.score.toFixed(1)} → ${d.score.toFixed(1)} <span style="color:${gain>=0?"var(--green)":"var(--red)"}">${gain>=0?"+":""}${gain.toFixed(1)}</span></h3>
     <div class="dashboard-grid">
       <div class="dashbox"><div class="tiny muted">Long pauses</div><b>${attemptOne.audio.longPauseCount} → ${d.audio.longPauseCount}</b></div>
@@ -601,6 +688,15 @@ function showSpeakingResult(d,duration,opts={log:true,edited:false,recordingId:r
  state.xp+=d.xp;state.words+=d.words;
  state.uniqueWords=[...new Set([...(state.uniqueWords||[]),...d.uniqueWords])].slice(0,5000);
  state.wpm.push(d.wpm);state.pauseRates.push(d.audio.pauseRate);
+ if(Number.isFinite(d.audio.responseTime)) state.responseTimes.push(d.audio.responseTime);
+ if(Number.isFinite(d.audio.longestSpeechBurst)) state.flowStreaks.push(d.audio.longestSpeechBurst);
+ const cw=comfortWordOpportunity(d.transcript||"");
+ if(cw){
+   state.comfortWords[cw.term]=(state.comfortWords[cw.term]||0)+cw.count;
+   if(d.primaryCoach && d.primaryCoach.upgrade){
+     for(const x of d.primaryCoach.upgrade.options) if(!state.unlockedExpressions.includes(x)) state.unlockedExpressions.push(x);
+   }
+ }
  const mins=duration/60;state.minutes+=mins;state.sessions+=1;state.scores.push(d.score);
  state.history.push({mode,minutes:mins,score:d.score,date:new Date().toLocaleDateString(),words:d.words,wpm:d.wpm,longPauses:d.audio.longPauseCount,fillers:d.hesitation,retry:isRetry});
  if(state.history.length>150)state.history=state.history.slice(-150);
@@ -682,7 +778,17 @@ $("saveGoal").onclick=()=>{state.goalHours=Math.max(1,Number($("goalHours").valu
 if($("resetDataBtn")) $("resetDataBtn").onclick=()=>{
  if(confirm("Reset all SpeakQuest progress stored on this device?")){
    localStorage.removeItem("sq_state");location.reload();
- }
+ },
+ "Speaking Gauntlet":[
+  ["Compress the story","Tell me what you did yesterday. Round 1: 60 seconds. Keep moving even if the Italian is imperfect.",["past","flow","60 sec"]],
+  ["Explain your work","Describe what you do at work to an Italian friend who knows nothing about your industry.",["work","simple Italian","flow"]],
+  ["Your opinion","Choose something you care about and defend your opinion without stopping.",["opinion","perché","quindi"]]
+ ],
+ "Flow Mode":[
+  ["Keep the floor","Speak for 60 seconds without a pause longer than 3 seconds. If you get stuck, use an Italian rescue phrase and continue.",["fammi pensare","quello che voglio dire","flow"]],
+  ["No English","Describe your day for 60 seconds. Stay in Italian even when you do not know the perfect word.",["no English","60 sec","rescue phrases"]]
+ ],
+
 };
 if($("exportDataBtn")) $("exportDataBtn").onclick=()=>{
  const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});
