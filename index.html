@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#07101e">
+<title>SpeakQuest — Italian Speaking RPG</title>
+<style>
+:root{--bg:#07101e;--panel:#101b30;--panel2:#152541;--line:#263b60;--txt:#f4f8ff;--muted:#93a4c3;--cyan:#4dd4ff;--green:#45e3aa;--yellow:#ffd66b;--purple:#a786ff;--red:#ff7180}
+*{box-sizing:border-box} html,body{margin:0;background:radial-gradient(circle at 15% 0,#112848 0,transparent 32%),var(--bg);color:var(--txt);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body{min-height:100vh;padding-bottom:max(92px,calc(74px + env(safe-area-inset-bottom)))}
+button,input,textarea{font:inherit} button{touch-action:manipulation}
+.app{max-width:1200px;margin:auto;padding:20px}
+header{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:18px}.brand{display:flex;gap:12px;align-items:center}
+.logo{width:46px;height:46px;border-radius:14px;background:linear-gradient(135deg,var(--cyan),var(--green));display:grid;place-items:center;color:#03121c;font-weight:950}
+h1{font-size:23px;margin:0}.muted{color:var(--muted)}.tiny{font-size:12px}.stats{display:flex;gap:8px;flex-wrap:wrap}
+.chip,.tag{border:1px solid var(--line);background:#0c1729;border-radius:999px;padding:8px 11px;font-size:12px;color:#ccd7ec}
+.layout{display:grid;grid-template-columns:1.35fr .75fr;gap:18px}.card{background:linear-gradient(180deg,#13213a,#0f1a2d);border:1px solid var(--line);border-radius:22px;padding:20px;box-shadow:0 18px 55px #0006}
+.hero{background:linear-gradient(135deg,#102f48,#11233c 55%,#191c3f)}.kicker{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--cyan);font-weight:900}
+h2{font-size:31px;line-height:1.05;margin:8px 0 10px}h3{margin:5px 0 8px}.tags,.buttons{display:flex;gap:8px;flex-wrap:wrap}.tags{margin:13px 0}
+.prompt{color:#dce6f8;line-height:1.55}.record{margin-top:16px;border-radius:18px;padding:15px;background:#091425;border:1px solid var(--line)}
+button{border:none;border-radius:13px;padding:12px 15px;font-weight:850;cursor:pointer}.primary{background:linear-gradient(135deg,var(--cyan),var(--green));color:#041018}.secondary{background:#1c2d4c;color:white;border:1px solid #355177}.recording{background:#ff5c6f;color:white}.ghost{background:transparent;color:#c8d4ea;border:1px solid var(--line)}
+.timer{font-variant-numeric:tabular-nums;font-size:30px;font-weight:950;margin:8px 0}.status{font-size:13px;color:var(--muted);min-height:20px}
+audio{width:100%;margin-top:12px}textarea{width:100%;min-height:100px;background:#07111f;color:white;border:1px solid var(--line);border-radius:13px;padding:12px;margin-top:10px}
+.results{display:none;margin-top:16px;grid-template-columns:repeat(2,1fr);gap:10px}.results.show{display:grid}.result{background:#091425;border:1px solid var(--line);border-radius:15px;padding:13px}.score{font-size:29px;font-weight:950;color:var(--green)}
+.side{display:grid;gap:18px}.bar{height:10px;border-radius:99px;background:#091220;border:1px solid #223654;overflow:hidden}.fill{height:100%;background:linear-gradient(90deg,var(--purple),var(--cyan));border-radius:99px}
+.row{display:flex;justify-content:space-between;gap:12px}.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}.metric{padding:12px 7px;text-align:center;background:#091425;border:1px solid var(--line);border-radius:13px}.metric b{font-size:20px;display:block}.metric span{font-size:10px;color:var(--muted)}
+.modegrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.mode{padding:14px;border:1px solid var(--line);border-radius:15px;background:#0b172a;cursor:pointer}.mode.active{border-color:var(--cyan);box-shadow:0 0 0 1px var(--cyan) inset}.mode b{display:block;margin-bottom:4px}.mode span{font-size:11px;color:var(--muted)}
+.dashboard-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:12px}.dashbox{background:#091425;border:1px solid var(--line);border-radius:15px;padding:13px}.dashbox b{font-size:22px}
+.goal-edit{display:flex;gap:8px;margin-top:12px}.goal-edit input{width:90px;background:#07111f;color:white;border:1px solid var(--line);border-radius:10px;padding:9px}
+.nav{position:fixed;z-index:20;left:50%;bottom:max(10px,env(safe-area-inset-bottom));transform:translateX(-50%);width:min(680px,calc(100% - 24px));padding:8px;background:#0b1629ee;border:1px solid var(--line);border-radius:18px;backdrop-filter:blur(12px);display:grid;grid-template-columns:repeat(4,1fr);box-shadow:0 12px 40px #0008}.nav button{padding:10px 6px;background:transparent;color:var(--muted);font-size:11px}.nav button.active{background:#1a2b49;color:white}
+.screen{display:none}.screen.active{display:block}.xpflash{display:none;margin-top:12px;border-radius:13px;padding:11px;background:#123b33;color:#b9ffe7;border:1px solid #236b58;font-weight:800}.xpflash.show{display:block}
+@media(max-width:850px){.app{padding:14px}.layout{grid-template-columns:1fr}header{align-items:flex-start;flex-direction:column}h2{font-size:27px}.results.show{grid-template-columns:1fr}.modegrid{grid-template-columns:1fr 1fr}.card{padding:17px;border-radius:19px}.stats{width:100%}.chip{padding:7px 9px}.dashboard-grid{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+ <div class="brand"><div class="logo">SQ</div><div><h1>SpeakQuest</h1><div class="muted tiny">Italian Speaking RPG · built around speaking time</div></div></div>
+ <div class="stats"><div class="chip">🔥 <b id="streak">1</b> day streak</div><div class="chip">⚡ <b id="xpTop">0</b> XP</div><div class="chip">🎙 <b id="monthMinTop">0</b> min this month</div></div>
+</header>
+
+<section id="play" class="screen active">
+<div class="layout">
+<main>
+ <div class="card hero">
+  <div class="kicker" id="modeLabel">Daily Mission</div>
+  <h2 id="missionTitle">Il treno è in ritardo.</h2>
+  <div class="prompt" id="missionPrompt">You are at Roma Termini. Your train is delayed 90 minutes. Explain what happened, ask what your options are, and decide what you will do next. Aim for 2–3 minutes.</div>
+  <div class="tags" id="missionTags"></div>
+  <div class="record">
+   <div class="row"><div><div class="kicker" style="color:var(--green)">Your turn</div><div class="status" id="status">Tap record and speak in Italian.</div></div><div class="timer" id="timer">00:00</div></div>
+   <div class="buttons">
+    <button class="primary" id="recordBtn">🎙 Start recording</button>
+    <button class="secondary" id="scoreBtn" disabled>✨ Transcribe + score</button>
+    <button class="ghost" id="newBtn">↻ New challenge</button>
+   </div>
+   <audio id="playback" controls style="display:none"></audio>
+   <textarea id="manualText" placeholder="Optional fallback: type/paste Italian here if you cannot use the microphone."></textarea>
+   <button class="ghost" id="scoreTextBtn" style="margin-top:8px">Score typed Italian</button>
+   <div class="xpflash" id="xpflash"></div>
+   <div class="results" id="results">
+    <div class="result"><div class="muted tiny">Overall</div><div class="score" id="overall">—</div><div id="summary"></div></div>
+    <div class="result"><div class="muted tiny">Transcript</div><div id="transcript">—</div></div>
+    <div class="result"><div class="muted tiny">Most important corrections</div><div id="corrections">—</div></div>
+    <div class="result"><div class="muted tiny">Natural Italian</div><div id="natural">—</div></div>
+    <div class="result"><div class="muted tiny">Skill scores</div><div id="skills">—</div></div>
+    <div class="result"><div class="muted tiny">Coach challenge</div><div id="coach">—</div></div>
+   </div>
+  </div>
+ </div>
+</main>
+<aside class="side">
+ <div class="card">
+  <div class="row"><div><b>Monthly Speaking Goal</b><div class="muted tiny" id="goalCaption"></div></div><b id="goalPct">0%</b></div>
+  <div class="bar" style="margin-top:10px"><div class="fill" id="goalFill" style="width:0%"></div></div>
+  <div class="metrics"><div class="metric"><b id="monthMin">0</b><span>minutes</span></div><div class="metric"><b id="sessions">0</b><span>sessions</span></div><div class="metric"><b id="avgScore">—</b><span>avg score</span></div></div>
+ </div>
+ <div class="card">
+  <div class="kicker">Choose a mode</div>
+  <div class="modegrid" id="modeGrid"></div>
+ </div>
+</aside>
+</div>
+</section>
+
+<section id="adventure" class="screen">
+<div class="card">
+ <div class="kicker">Adventure Mode</div><h2>Viaggio attraverso l’Italia</h2>
+ <p class="prompt">A speaking-first campaign. Complete conversations to move from city to city. Each location introduces recurring characters, practical situations, and vocabulary.</p>
+ <div class="dashboard-grid">
+  <div class="dashbox"><div class="muted tiny">Chapter 1</div><b>Roma</b><p class="tiny">Train station, café, hotel, directions</p><button class="primary" onclick="startAdventure('Roma')">Enter Rome</button></div>
+  <div class="dashbox"><div class="muted tiny">Chapter 2</div><b>Napoli 🔒</b><p class="tiny">Street food, opinions, storytelling</p></div>
+  <div class="dashbox"><div class="muted tiny">Chapter 3</div><b>Sicilia 🔒</b><p class="tiny">Longer conversations and stories</p></div>
+  <div class="dashbox"><div class="muted tiny">Final</div><b>Boss Battle 🔒</b><p class="tiny">15-minute all-Italian mission</p></div>
+ </div>
+</div>
+</section>
+
+<section id="dashboard" class="screen">
+<div class="card">
+ <div class="kicker">Speaking Dashboard</div><h2 id="monthName">This Month</h2>
+ <div class="row"><div><b>Goal progress</b><div class="muted tiny" id="dashGoalCaption"></div></div><b id="dashPct">0%</b></div>
+ <div class="bar" style="height:14px;margin:12px 0 16px"><div class="fill" id="dashFill"></div></div>
+ <div class="dashboard-grid">
+  <div class="dashbox"><div class="muted tiny">Spoken</div><b id="dMinutes">0 min</b></div>
+  <div class="dashbox"><div class="muted tiny">Sessions</div><b id="dSessions">0</b></div>
+  <div class="dashbox"><div class="muted tiny">Average score</div><b id="dScore">—</b></div>
+  <div class="dashbox"><div class="muted tiny">XP earned</div><b id="dXp">0</b></div>
+ </div>
+ <div class="goal-edit"><input id="goalHours" type="number" min="1" max="200" value="30"><button class="secondary" id="saveGoal">Set monthly hours</button></div>
+</div>
+<div class="card" style="margin-top:18px">
+ <div class="kicker">Recent Sessions</div>
+ <div id="history" class="prompt" style="margin-top:10px"></div>
+</div>
+</section>
+
+<section id="settings" class="screen">
+<div class="card">
+ <div class="kicker">Setup</div><h2>Safari + microphone</h2>
+ <p class="prompt">For iPhone/iPad Safari, open SpeakQuest from an HTTPS URL, allow microphone access when prompted, and keep the page active while recording. Audio is recorded in the format Safari reports as supported, then uploaded for transcription and scoring.</p>
+ <div id="compat" class="result"></div>
+</div>
+</section>
+</div>
+
+<nav class="nav">
+<button class="active" data-screen="play">🎙<br>Play</button>
+<button data-screen="adventure">🗺<br>Adventure</button>
+<button data-screen="dashboard">📊<br>Dashboard</button>
+<button data-screen="settings">⚙️<br>Setup</button>
+</nav>
+
+<script>
+const MODES={
+ "Daily Mission":[
+  ["Il treno è in ritardo.","You are at Roma Termini. Your train is delayed 90 minutes. Explain what happened, ask what your options are, and decide what you will do next. Aim for 2–3 minutes.",["quindi","magari","future"]],
+  ["La tua giornata ideale.","Describe your ideal Saturday from morning to night. Explain why each part matters to you.",["di solito","poi","perché"]]
+ ],
+ "Rapid Fire":[
+  ["Rispondi subito!","Answer five short prompts with no more than five seconds of preparation: What did you do yesterday? What will you do tomorrow? What makes you happy? What are you learning? What do you want to improve?",["no English","fast response","+20 XP"]],
+ ],
+ "Story Mode":[
+  ["Una storia in tre minuti.","Tell a true story about a trip, a difficult day, or a funny mistake. Include what was happening, what changed, and how it ended.",["imperfetto","passato prossimo","mentre"]],
+ ],
+ "Role Play":[
+  ["La prenotazione è sparita.","You booked a table for six, but the restaurant cannot find the reservation. Explain when you booked, answer questions, and negotiate a solution politely.",["vorrei","potrebbe","comunque"]],
+ ],
+ "Tutor Mode":[
+  ["Allenamento mirato.","Speak about what you did this week. The coach will identify your two highest-value recurring problems and give you one short repeat challenge.",["accuracy","self-correction","repeat"]],
+ ]
+};
+let mode="Daily Mission", mediaRecorder=null, chunks=[], audioBlob=null, startTime=0, interval=null, lastDuration=0;
+const $=id=>document.getElementById(id);
+const state=JSON.parse(localStorage.getItem("sq_state")||'{"goalHours":30,"minutes":0,"sessions":0,"xp":0,"scores":[],"history":[],"streak":1}');
+function save(){localStorage.setItem("sq_state",JSON.stringify(state));renderStats()}
+function monthLabel(){return new Date().toLocaleString(undefined,{month:"long",year:"numeric"})}
+function renderStats(){
+ const goal=state.goalHours*60, pct=Math.min(100,Math.round((state.minutes/goal)*100)||0);
+ $("monthMinTop").textContent=Math.round(state.minutes); $("xpTop").textContent=state.xp; $("streak").textContent=state.streak;
+ $("goalCaption").textContent=`${Math.round(state.minutes)} of ${goal} minutes`; $("goalPct").textContent=pct+"%"; $("goalFill").style.width=pct+"%";
+ $("monthMin").textContent=Math.round(state.minutes); $("sessions").textContent=state.sessions;
+ const avg=state.scores.length?(state.scores.reduce((a,b)=>a+b,0)/state.scores.length).toFixed(1):"—"; $("avgScore").textContent=avg;
+ $("monthName").textContent=monthLabel(); $("dashGoalCaption").textContent=`${Math.round(state.minutes)} of ${goal} minutes`; $("dashPct").textContent=pct+"%"; $("dashFill").style.width=pct+"%";
+ $("dMinutes").textContent=Math.round(state.minutes)+" min"; $("dSessions").textContent=state.sessions; $("dScore").textContent=avg; $("dXp").textContent=state.xp; $("goalHours").value=state.goalHours;
+ $("history").innerHTML=state.history.length?state.history.slice(-8).reverse().map(h=>`<div style="padding:9px 0;border-bottom:1px solid #233756"><b>${h.mode}</b> · ${h.minutes.toFixed(1)} min · ${h.score}/10 <span class="muted">— ${h.date}</span></div>`).join(""):"No scored sessions yet.";
+}
+function renderModes(){
+ $("modeGrid").innerHTML=Object.keys(MODES).map(m=>`<div class="mode ${m===mode?"active":""}" data-mode="${m}"><b>${m}</b><span>${m==="Daily Mission"?"Daily speaking quest":m==="Rapid Fire"?"Fast spontaneous answers":m==="Story Mode"?"Longer connected speech":m==="Role Play"?"Real-life conversations":"Adaptive correction"}</span></div>`).join("");
+ document.querySelectorAll(".mode").forEach(el=>el.onclick=()=>{mode=el.dataset.mode;renderModes();newChallenge()});
+}
+function newChallenge(){
+ const arr=MODES[mode], item=arr[Math.floor(Math.random()*arr.length)];
+ $("modeLabel").textContent=mode; $("missionTitle").textContent=item[0]; $("missionPrompt").textContent=item[1];
+ $("missionTags").innerHTML=item[2].map(t=>`<span class="tag">${t}</span>`).join("");
+ $("results").classList.remove("show");$("xpflash").classList.remove("show");$("manualText").value="";audioBlob=null;$("scoreBtn").disabled=true;$("playback").style.display="none";$("status").textContent="Tap record and speak in Italian.";
+}
+function supportedType(){
+ const types=["audio/mp4","audio/webm;codecs=opus","audio/webm","audio/ogg;codecs=opus"];
+ return types.find(t=>window.MediaRecorder&&MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported(t))||"";
+}
+async function toggleRecord(){
+ if(mediaRecorder&&mediaRecorder.state==="recording"){mediaRecorder.stop();return}
+ if(!navigator.mediaDevices?.getUserMedia){$("status").textContent="This browser cannot access microphone recording.";return}
+ try{
+  const stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true},video:false});
+  chunks=[]; const type=supportedType(); mediaRecorder=type?new MediaRecorder(stream,{mimeType:type}):new MediaRecorder(stream);
+  mediaRecorder.ondataavailable=e=>{if(e.data.size)chunks.push(e.data)};
+  mediaRecorder.onstop=()=>{
+   lastDuration=(Date.now()-startTime)/1000; clearInterval(interval); $("timer").textContent=formatTime(lastDuration);
+   audioBlob=new Blob(chunks,{type:mediaRecorder.mimeType||type||"audio/mp4"});
+   $("playback").src=URL.createObjectURL(audioBlob);$("playback").style.display="block";$("scoreBtn").disabled=false;
+   $("recordBtn").className="primary";$("recordBtn").textContent="🎙 Record again";$("status").textContent="Recording ready. Tap Transcribe + score.";
+   stream.getTracks().forEach(t=>t.stop());
+  };
+  mediaRecorder.start(500); startTime=Date.now(); $("recordBtn").className="recording";$("recordBtn").textContent="■ Stop recording";$("status").textContent="Listening… keep speaking.";
+  interval=setInterval(()=>$("timer").textContent=formatTime((Date.now()-startTime)/1000),250);
+ }catch(e){$("status").textContent="Microphone access failed: "+(e.message||e.name)+". On Safari, confirm microphone permission and HTTPS."}
+}
+function formatTime(s){s=Math.floor(s);return String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0")}
+async function scoreAudio(){
+ if(!audioBlob)return;
+ $("scoreBtn").disabled=true;$("status").textContent="Uploading audio, transcribing Italian, then scoring…";
+ try{
+  const ext=audioBlob.type.includes("mp4")?"m4a":audioBlob.type.includes("ogg")?"ogg":"webm";
+  const fd=new FormData();fd.append("audio",audioBlob,"speaking."+ext);fd.append("mode",mode);fd.append("mission",$("missionPrompt").textContent);fd.append("duration",String(lastDuration));
+  const r=await fetch("/api/score",{method:"POST",body:fd}); const data=await r.json(); if(!r.ok)throw new Error(data.error||"Scoring failed");
+  showResult(data,lastDuration);
+ }catch(e){$("status").textContent="Could not score: "+e.message;$("scoreBtn").disabled=false}
+}
+async function scoreText(){
+ const text=$("manualText").value.trim();if(!text){$("status").textContent="Type some Italian first.";return}
+ $("status").textContent="Scoring typed Italian…";
+ try{
+  const r=await fetch("/api/score-text",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text,mode,mission:$("missionPrompt").textContent})});
+  const data=await r.json();if(!r.ok)throw new Error(data.error||"Scoring failed");showResult(data,0);
+ }catch(e){$("status").textContent="Could not score: "+e.message}
+}
+function showResult(d,duration){
+ $("overall").textContent=Number(d.score).toFixed(1)+" / 10";$("summary").textContent=d.summary||"";
+ $("transcript").textContent=d.transcript||"—";
+ $("corrections").innerHTML=(d.corrections||[]).map(c=>`<div style="margin-bottom:8px"><b>${escapeHtml(c.original)}</b> → ${escapeHtml(c.correction)}<div class="muted tiny">${escapeHtml(c.reason)}</div></div>`).join("")||"No major correction needed.";
+ $("natural").textContent=d.natural_version||"—";
+ $("skills").innerHTML=`Fluency <b>${d.fluency}/10</b><br>Grammar <b>${d.grammar}/10</b><br>Vocabulary <b>${d.vocabulary}/10</b><br>Naturalness <b>${d.naturalness}/10</b>`;
+ $("coach").textContent=d.coach_challenge||"Repeat once more, a little faster.";
+ $("results").classList.add("show"); const earned=Number(d.xp||20);state.xp+=earned;
+ if(duration>0){const mins=duration/60;state.minutes+=mins;state.sessions+=1;state.scores.push(Number(d.score));state.history.push({mode,minutes:mins,score:Number(d.score),date:new Date().toLocaleDateString()})}
+ save();$("xpflash").textContent=`+${earned} XP · session scored and saved to ${monthLabel()}`;$("xpflash").classList.add("show");$("status").textContent="Scored. Repeat the coach challenge for another rep.";$("scoreBtn").disabled=false;
+}
+function escapeHtml(s){return String(s||"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+function startAdventure(city){mode="Role Play";renderModes();document.querySelector('[data-screen="play"]').click();$("missionTitle").textContent=`Arrivo a ${city}`;$("missionPrompt").textContent=`You have just arrived in ${city}. Ask a station employee how to reach your hotel, clarify one detail you did not understand, and thank them naturally. Speak for at least 90 seconds.`}
+document.querySelectorAll(".nav button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("active"));b.classList.add("active");document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));$(b.dataset.screen).classList.add("active")});
+$("recordBtn").onclick=toggleRecord;$("scoreBtn").onclick=scoreAudio;$("scoreTextBtn").onclick=scoreText;$("newBtn").onclick=newChallenge;
+$("saveGoal").onclick=()=>{state.goalHours=Math.max(1,Number($("goalHours").value)||30);save()};
+const type=supportedType();$("compat").innerHTML=`<b>Recording API:</b> ${window.MediaRecorder?"available":"not available"}<br><b>Microphone API:</b> ${navigator.mediaDevices?.getUserMedia?"available":"not available"}<br><b>Preferred recording format:</b> ${type||"browser default"}<br><b>Secure page:</b> ${window.isSecureContext?"yes":"no — microphone may be blocked"}`;
+renderModes();newChallenge();renderStats();
+</script>
+</body></html>
