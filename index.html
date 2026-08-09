@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#07101e">
-<title>SpeakQuest — Italian Speaking RPG</title>
+<title>SpeakQuest v3 — Italian Speaking RPG</title>
 <style>
 :root{--bg:#07101e;--panel:#101b30;--panel2:#152541;--line:#263b60;--txt:#f4f8ff;--muted:#93a4c3;--cyan:#4dd4ff;--green:#45e3aa;--yellow:#ffd66b;--purple:#a786ff;--red:#ff7180}
 *{box-sizing:border-box} html,body{margin:0;background:radial-gradient(circle at 15% 0,#112848 0,transparent 32%),var(--bg);color:var(--txt);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
@@ -36,7 +36,7 @@ audio{width:100%;margin-top:12px}textarea{width:100%;min-height:100px;background
 <body>
 <div class="app">
 <header>
- <div class="brand"><div class="logo">SQ</div><div><h1>SpeakQuest</h1><div class="muted tiny">Italian Speaking RPG · built around speaking time</div></div></div>
+ <div class="brand"><div class="logo">SQ</div><div><h1>SpeakQuest</h1><div class="muted tiny">Italian Speaking RPG · v3 · built around speaking time</div></div></div>
  <div class="stats"><div class="chip">🔥 <b id="streak">1</b> day streak</div><div class="chip">⚡ <b id="xpTop">0</b> XP</div><div class="chip">🎙 <b id="monthMinTop">0</b> min this month</div></div>
 </header>
 
@@ -75,6 +75,11 @@ audio{width:100%;margin-top:12px}textarea{width:100%;min-height:100px;background
   <div class="row"><div><b>Monthly Speaking Goal</b><div class="muted tiny" id="goalCaption"></div></div><b id="goalPct">0%</b></div>
   <div class="bar" style="margin-top:10px"><div class="fill" id="goalFill" style="width:0%"></div></div>
   <div class="metrics"><div class="metric"><b id="monthMin">0</b><span>minutes</span></div><div class="metric"><b id="sessions">0</b><span>sessions</span></div><div class="metric"><b id="avgScore">—</b><span>avg score</span></div></div>
+ </div>
+ <div class="card">
+  <div class="row"><div><b>Today’s Speaking Target</b><div class="muted tiny">60 minutes recommended</div></div><b id="dailyTarget">0%</b></div>
+  <div class="bar" style="margin-top:10px"><div class="fill" id="dailyTargetFill" style="width:0%"></div></div>
+  <p class="tiny muted" style="margin-bottom:0">Every scored recording adds its actual duration to your monthly goal.</p>
  </div>
  <div class="card">
   <div class="kicker">Choose a mode</div>
@@ -121,6 +126,17 @@ audio{width:100%;margin-top:12px}textarea{width:100%;min-height:100px;background
  <div class="kicker">Setup</div><h2>Safari + microphone</h2>
  <p class="prompt">For iPhone/iPad Safari, open SpeakQuest from an HTTPS URL, allow microphone access when prompted, and keep the page active while recording. Audio is recorded in the format Safari reports as supported, then uploaded for transcription and scoring.</p>
  <div id="compat" class="result"></div>
+ <div class="card" style="margin-top:18px;background:#091425">
+  <div class="kicker">AI Connection</div>
+  <h3>Scoring server URL</h3>
+  <p class="prompt tiny">GitHub Pages hosts the game, but real transcription/scoring must run on a separate secure server. Paste that server URL here once it is deployed. Example: <b>https://speakquest-api.onrender.com</b></p>
+  <input id="backendUrl" type="url" placeholder="https://your-backend.example.com" style="width:100%;background:#07111f;color:white;border:1px solid var(--line);border-radius:10px;padding:11px">
+  <div class="buttons" style="margin-top:9px">
+   <button class="secondary" id="saveBackend">Save server URL</button>
+   <button class="ghost" id="testBackend">Test connection</button>
+  </div>
+  <div class="status" id="backendStatus"></div>
+ </div>
 </div>
 </section>
 </div>
@@ -136,24 +152,35 @@ audio{width:100%;margin-top:12px}textarea{width:100%;min-height:100px;background
 const MODES={
  "Daily Mission":[
   ["Il treno è in ritardo.","You are at Roma Termini. Your train is delayed 90 minutes. Explain what happened, ask what your options are, and decide what you will do next. Aim for 2–3 minutes.",["quindi","magari","future"]],
-  ["La tua giornata ideale.","Describe your ideal Saturday from morning to night. Explain why each part matters to you.",["di solito","poi","perché"]]
+  ["La tua giornata ideale.","Describe your ideal Saturday from morning to night. Explain why each part matters to you. Aim for 2 minutes.",["di solito","poi","perché"]],
+  ["Un piccolo problema.","Something went wrong this morning. Explain what happened, how you reacted, and what you did next.",["prima","poi","alla fine"]],
+  ["Una decisione importante.","Describe one decision you need to make this month. Explain the options and what you think you will choose.",["secondo me","dipende","probabilmente"]]
  ],
  "Rapid Fire":[
   ["Rispondi subito!","Answer five short prompts with no more than five seconds of preparation: What did you do yesterday? What will you do tomorrow? What makes you happy? What are you learning? What do you want to improve?",["no English","fast response","+20 XP"]],
+  ["Dieci risposte veloci.","Give 10 answers of 1–2 sentences each: favorite food, favorite city, weekend plan, last purchase, current goal, best habit, hardest Italian skill, next trip, favorite sport, something you learned today.",["5 sec prep","short answers","automaticity"]]
  ],
  "Story Mode":[
   ["Una storia in tre minuti.","Tell a true story about a trip, a difficult day, or a funny mistake. Include what was happening, what changed, and how it ended.",["imperfetto","passato prossimo","mentre"]],
+  ["Quando qualcosa è cambiato.","Tell a story about a moment when your plans changed unexpectedly. Describe the situation before, the event, and the result.",["all'inizio","mentre","alla fine"]],
+  ["Una persona importante.","Tell a connected story about someone who has influenced you. Give at least two examples.",["per esempio","perché","inoltre"]]
  ],
  "Role Play":[
   ["La prenotazione è sparita.","You booked a table for six, but the restaurant cannot find the reservation. Explain when you booked, answer questions, and negotiate a solution politely.",["vorrei","potrebbe","comunque"]],
+  ["Problema in hotel.","Your hotel room is not what you reserved. Explain the problem politely and ask for two possible solutions.",["avevo prenotato","sarebbe possibile","preferirei"]],
+  ["Dal medico — situazione semplice.","Explain a minor everyday issue such as a sore throat or headache, how long it has lasted, and ask what you should do.",["da due giorni","mi fa male","cosa mi consiglia"]],
+  ["Riunione di lavoro.","Explain a manufacturing problem to an Italian colleague. Describe the current state, one risk, and your recommended next step.",["attualmente","il problema è","propongo di"]]
  ],
  "Tutor Mode":[
   ["Allenamento mirato.","Speak about what you did this week. The coach will identify your two highest-value recurring problems and give you one short repeat challenge.",["accuracy","self-correction","repeat"]],
+  ["Parla senza prepararti.","Choose any topic and speak for 3 minutes. Focus on keeping the conversation moving rather than being perfect.",["fluency","connectors","keep going"]],
+  ["Passato automatico.","Describe yesterday from morning to evening. Try not to pause before choosing essere or avere.",["passato prossimo","auxiliaries","automaticity"]]
  ]
-};
+}
 let mode="Daily Mission", mediaRecorder=null, chunks=[], audioBlob=null, startTime=0, interval=null, lastDuration=0;
 const $=id=>document.getElementById(id);
-const state=JSON.parse(localStorage.getItem("sq_state")||'{"goalHours":30,"minutes":0,"sessions":0,"xp":0,"scores":[],"history":[],"streak":1}');
+const state=JSON.parse(localStorage.getItem("sq_state")||'{"goalHours":30,"minutes":0,"sessions":0,"xp":0,"scores":[],"history":[],"streak":1,"backendUrl":""}');
+if(state.backendUrl===undefined) state.backendUrl="";
 function save(){localStorage.setItem("sq_state",JSON.stringify(state));renderStats()}
 function monthLabel(){return new Date().toLocaleString(undefined,{month:"long",year:"numeric"})}
 function renderStats(){
@@ -161,6 +188,11 @@ function renderStats(){
  $("monthMinTop").textContent=Math.round(state.minutes); $("xpTop").textContent=state.xp; $("streak").textContent=state.streak;
  $("goalCaption").textContent=`${Math.round(state.minutes)} of ${goal} minutes`; $("goalPct").textContent=pct+"%"; $("goalFill").style.width=pct+"%";
  $("monthMin").textContent=Math.round(state.minutes); $("sessions").textContent=state.sessions;
+ const todayStr=new Date().toLocaleDateString();
+ const todayMin=state.history.filter(h=>h.date===todayStr).reduce((a,h)=>a+(Number(h.minutes)||0),0);
+ const dailyPct=Math.min(100,Math.round(todayMin/60*100));
+ if($("dailyTarget")) $("dailyTarget").textContent=dailyPct+"%";
+ if($("dailyTargetFill")) $("dailyTargetFill").style.width=dailyPct+"%";
  const avg=state.scores.length?(state.scores.reduce((a,b)=>a+b,0)/state.scores.length).toFixed(1):"—"; $("avgScore").textContent=avg;
  $("monthName").textContent=monthLabel(); $("dashGoalCaption").textContent=`${Math.round(state.minutes)} of ${goal} minutes`; $("dashPct").textContent=pct+"%"; $("dashFill").style.width=pct+"%";
  $("dMinutes").textContent=Math.round(state.minutes)+" min"; $("dSessions").textContent=state.sessions; $("dScore").textContent=avg; $("dXp").textContent=state.xp; $("goalHours").value=state.goalHours;
@@ -199,13 +231,17 @@ async function toggleRecord(){
  }catch(e){$("status").textContent="Microphone access failed: "+(e.message||e.name)+". On Safari, confirm microphone permission and HTTPS."}
 }
 function formatTime(s){s=Math.floor(s);return String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0")}
+function apiUrl(path){
+ const base=(state.backendUrl||"").trim().replace(/\/$/,"");
+ return base ? base+path : path;
+}
 async function scoreAudio(){
  if(!audioBlob)return;
  $("scoreBtn").disabled=true;$("status").textContent="Uploading audio, transcribing Italian, then scoring…";
  try{
   const ext=audioBlob.type.includes("mp4")?"m4a":audioBlob.type.includes("ogg")?"ogg":"webm";
   const fd=new FormData();fd.append("audio",audioBlob,"speaking."+ext);fd.append("mode",mode);fd.append("mission",$("missionPrompt").textContent);fd.append("duration",String(lastDuration));
-  const r=await fetch("/api/score",{method:"POST",body:fd}); const data=await r.json(); if(!r.ok)throw new Error(data.error||"Scoring failed");
+  const r=await fetch(apiUrl("/api/score"),{method:"POST",body:fd}); const data=await r.json(); if(!r.ok)throw new Error(data.error||"Scoring failed");
   showResult(data,lastDuration);
  }catch(e){$("status").textContent="Could not score: "+e.message;$("scoreBtn").disabled=false}
 }
@@ -213,7 +249,7 @@ async function scoreText(){
  const text=$("manualText").value.trim();if(!text){$("status").textContent="Type some Italian first.";return}
  $("status").textContent="Scoring typed Italian…";
  try{
-  const r=await fetch("/api/score-text",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text,mode,mission:$("missionPrompt").textContent})});
+  const r=await fetch(apiUrl("/api/score-text"),{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text,mode,mission:$("missionPrompt").textContent})});
   const data=await r.json();if(!r.ok)throw new Error(data.error||"Scoring failed");showResult(data,0);
  }catch(e){$("status").textContent="Could not score: "+e.message}
 }
@@ -233,7 +269,25 @@ function startAdventure(city){mode="Role Play";renderModes();document.querySelec
 document.querySelectorAll(".nav button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("active"));b.classList.add("active");document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));$(b.dataset.screen).classList.add("active")});
 $("recordBtn").onclick=toggleRecord;$("scoreBtn").onclick=scoreAudio;$("scoreTextBtn").onclick=scoreText;$("newBtn").onclick=newChallenge;
 $("saveGoal").onclick=()=>{state.goalHours=Math.max(1,Number($("goalHours").value)||30);save()};
-const type=supportedType();$("compat").innerHTML=`<b>Recording API:</b> ${window.MediaRecorder?"available":"not available"}<br><b>Microphone API:</b> ${navigator.mediaDevices?.getUserMedia?"available":"not available"}<br><b>Preferred recording format:</b> ${type||"browser default"}<br><b>Secure page:</b> ${window.isSecureContext?"yes":"no — microphone may be blocked"}`;
+$("backendUrl").value=state.backendUrl||"";
+$("saveBackend").onclick=()=>{
+ state.backendUrl=$("backendUrl").value.trim().replace(/\/$/,"");
+ save();
+ $("backendStatus").textContent=state.backendUrl?"Saved. SpeakQuest will now send scoring requests to this server.":"Cleared. AI scoring will use same-origin /api routes.";
+};
+$("testBackend").onclick=async()=>{
+ const url=($("backendUrl").value.trim().replace(/\/$/,"")||state.backendUrl);
+ if(!url){$("backendStatus").textContent="Enter your deployed backend URL first.";return}
+ $("backendStatus").textContent="Testing…";
+ try{
+  const r=await fetch(url+"/api/health");
+  const d=await r.json();
+  $("backendStatus").textContent=r.ok&&d.ok?"✅ Connected. AI backend is reachable.":"Server responded, but health check was not OK.";
+ }catch(e){
+  $("backendStatus").textContent="❌ Could not connect. Check the URL and server CORS settings.";
+ }
+};
+const type=supportedType();$("compat").innerHTML=`<b>Recording API:</b> ${window.MediaRecorder?"available":"not available"}<br><b>Microphone API:</b> ${navigator.mediaDevices?.getUserMedia?"available":"not available"}<br><b>Preferred recording format:</b> ${type||"browser default"}<br><b>Secure page:</b> ${window.isSecureContext?"yes":"no — microphone may be blocked"}<br><b>AI server:</b> ${state.backendUrl?state.backendUrl:"not configured yet"}`;
 renderModes();newChallenge();renderStats();
 </script>
 </body></html>
