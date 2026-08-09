@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#07111f"><title>SpeakQuest v8</title>
+<meta name="theme-color" content="#07111f"><title>SpeakQuest v8.1</title>
 <style>
 :root{--bg:#07111f;--p:#101d32;--p2:#142641;--line:#2a4263;--t:#f5f8ff;--m:#96a9c7;--c:#4dd4ff;--g:#45e3aa;--y:#ffd56a;--r:#ff7180;--v:#a888ff}
 *{box-sizing:border-box}html,body{margin:0;background:radial-gradient(circle at 15% 0,#123052 0,transparent 30%),var(--bg);color:var(--t);font-family:Inter,system-ui,-apple-system,sans-serif}body{padding-bottom:max(90px,calc(75px + env(safe-area-inset-bottom)))}button,textarea,select{font:inherit}.app{max-width:1080px;margin:auto;padding:15px}
@@ -21,7 +21,7 @@ textarea{width:100%;min-height:85px;background:#07101e;color:white;border:1px so
 @media(max-width:820px){.app{padding:12px}header{align-items:flex-start;flex-direction:column}.grid{grid-template-columns:1fr}.gradegrid,.dashgrid{grid-template-columns:repeat(2,1fr)}h2{font-size:24px}.prompt{font-size:16px}}
 </style></head>
 <body><div class="app">
-<header><div class="brand"><div class="logo">SQ</div><div><h1>SpeakQuest</h1><div class="small muted">v8 · ADVENTURE + COACHING ENGINE</div></div></div>
+<header><div class="brand"><div class="logo">SQ</div><div><h1>SpeakQuest</h1><div class="small muted">v8.1 · ADVENTURE + COACHING ENGINE</div></div></div>
 <div class="stats"><div class="chip">🎙 <b id="hMin">0</b>m</div><div class="chip">🗣 <b id="hWords">0</b></div><div class="chip">⚡ <b id="hResp">—</b></div><div class="chip">🔥 <b id="hFlow">—</b></div></div></header>
 
 <section id="play" class="screen active"><div class="grid"><main>
@@ -109,7 +109,17 @@ const RULES=[
 [/\bho\s+(andato|arrivato|partito|venuto|tornato)\b/i,"Use essere","Use «sono andato/arrivato/partito/venuto/tornato»."]
 ];
 const UPG={"fare":["occuparmi di","preparare","creare"],"andare":["tornare","arrivare","partire"],"molto":["davvero","parecchio","particolarmente"],"buono":["ottimo","gustoso","piacevole"],"bello":["interessante","splendido","piacevole"],"mi piace":["preferisco","adoro","mi interessa"],"penso che":["secondo me","direi che","mi sembra che"]};
-const MODES={"Quick Play":"Short real-life situations","Rapid Fire":"Fast retrieval","Conversation":"Longer 1–3 minute speech"};
+const MODES={"Quick Play":"Short real-life situations","Rapid Fire":"Fast retrieval","Free Talk":"3–5 min · vocabulary + clarity","Conversation":"Longer guided speaking"};
+const FREETALK=[
+{scene:"🌦 Free Talk",context:"Opinion + explanation",q:"Che tempo preferisci e perché?",instruction:"Speak for 3–5 minutes. Explain your preference, compare seasons, give examples, and explain how weather changes your plans.",tags:["secondo me","dipende da","per esempio","invece","quindi"],bonus:["umido","soleggiato","nuvoloso","temperatura","stagione","previsione"],keys:["tempo","perché"],model:"Preference → reason → example → comparison → conclusion."},
+{scene:"🌅 Free Talk",context:"Daily routine",q:"Com'è una tua giornata normale?",instruction:"Speak for 3–5 minutes from morning to evening. Explain what you do, why you do it, and how the routine changes.",tags:["di solito","appena","prima di","dopo","durante","alla fine"],bonus:["sveglia","abitudine","impegno","pausa","organizzare","riuscire a"],keys:["mattina","giorno"],model:"Sequence → reasons → exception → comparison → conclusion."},
+{scene:"📅 Free Talk",context:"Weekend",q:"Com'è stato il tuo fine settimana?",instruction:"Speak for 3–5 minutes. Tell what happened, what you enjoyed, what you would change, and what comes next.",tags:["sabato","domenica","poi","mentre","alla fine"],bonus:["rilassarmi","trascorrere","approfittare","programma","inaspettato","divertente"],keys:["sabato","domenica"],model:"Beginning → events → reaction → reflection."},
+{scene:"💭 Free Talk",context:"Opinion",q:"È meglio avere una routine o essere spontanei?",instruction:"Speak for 3–5 minutes. State your opinion, support it, give an example, acknowledge the other side, and conclude.",tags:["secondo me","da una parte","dall'altra","però","in conclusione"],bonus:["vantaggio","svantaggio","flessibile","costanza","equilibrio","preferire"],keys:["routine","spont"],model:"Opinion → reasons → example → counterpoint → conclusion."},
+{scene:"🏀 Free Talk",context:"Common opinion",q:"Perché lo sport è importante per le persone?",instruction:"Speak for 3–5 minutes. Discuss physical, social, competitive, and personal benefits with examples.",tags:["secondo me","inoltre","per esempio","anche se","quindi"],bonus:["squadra","disciplina","migliorare","obiettivo","competizione","fiducia"],keys:["sport","perché"],model:"Main idea → several benefits → examples → conclusion."},
+{scene:"🇮🇹 Free Talk",context:"Travel",q:"Che cosa rende un viaggio memorabile?",instruction:"Speak for 3–5 minutes about places, people, food, unexpected events, and what stays in your memory.",tags:["per me","quando","soprattutto","per esempio","alla fine"],bonus:["esperienza","ricordo","scoprire","paesaggio","incontrare","indimenticabile"],keys:["viaggio"],model:"Opinion → personal example → details → reflection."},
+{scene:"💼 Free Talk",context:"Work",q:"Quali caratteristiche rendono un lavoro soddisfacente?",instruction:"Speak for 3–5 minutes. Explain what matters at work, compare priorities, give examples, and conclude.",tags:["secondo me","è importante","perché","inoltre","tuttavia"],bonus:["responsabilità","collaborazione","crescita","autonomia","obiettivo","soddisfazione"],keys:["lavor"],model:"Priorities → reasons → examples → tradeoff → conclusion."},
+{scene:"📚 Free Talk",context:"Learning",q:"Qual è il modo migliore per imparare una nuova abilità?",instruction:"Speak for 3–5 minutes. Explain your method, the role of mistakes and consistency, and give examples.",tags:["secondo me","all'inizio","poi","anche se","con il tempo"],bonus:["costanza","tentativo","errore","progresso","pratica","miglioramento"],keys:["impar"],model:"Process → reasons → example → lesson learned."}
+];
 const DEF={min:0,words:0,xp:0,resp:[],flow:[],hist:[],comfort:{},unlocked:[],today:{},model:"base",cityProgress:{Roma:0,Napoli:0,Sicilia:0}};
 let S=JSON.parse(localStorage.getItem("sq8")||JSON.stringify(DEF));Object.keys(DEF).forEach(k=>S[k]===undefined&&(S[k]=DEF[k]));
 let mode="Quick Play",current=null,used=[],media=null,stream=null,chunks=[],blob=null,tInt=null,start=0,dur=0,recId=0,lastLog=-1,busy=false,transcriber=null,loaded="",metrics=null,first=null,retrying=false,adventure=null,turn=0;
@@ -122,16 +132,27 @@ function resetRound(){resetRecorder();metrics=null;first=null;retrying=false;$("
 function category(s){return s.scene.replace(/^[^\s]+\s/,"")}
 function pick(){
  resetRound();
- let candidates=SCENARIOS;
+ let candidates=mode==="Free Talk"?FREETALK:SCENARIOS;
  if(mode==="Rapid Fire")candidates=SCENARIOS.filter(x=>["Daily life","Food","Travel","Meeting someone","Basketball","Plans"].includes(category(x)));
  if(mode==="Conversation")candidates=SCENARIOS.filter(x=>["Work","Travel","Basketball","Daily life"].includes(category(x)));
- const fresh=candidates.filter(x=>!used.includes(x.id));if(!fresh.length)used=[];
- current=fresh[Math.floor(Math.random()*fresh.length)]||candidates[Math.floor(Math.random()*candidates.length)];used.push(current.id);if(used.length>18)used.shift();turn=0;renderQ()
+ const tagged=candidates.map((x,i)=>({...x,_pickId:x.id!==undefined?x.id:"ft"+i}));
+ const fresh=tagged.filter(x=>!used.includes(x._pickId));if(!fresh.length)used=[];
+ current=fresh[Math.floor(Math.random()*fresh.length)]||tagged[Math.floor(Math.random()*tagged.length)];used.push(current._pickId);if(used.length>18)used.shift();turn=0;renderQ()
 }
 function renderQ(){
  $("modeLabel").textContent=adventure?`${adventure.icon} Adventure · ${adventure.city}`:mode;$("scene").textContent=current.scene+" · "+current.context;$("question").textContent=current.q;
- $("instruction").textContent=mode==="Conversation"?"Speak for 1–3 minutes. Detailed coaching comes after the recording.":current.instruction+" Aim for 8–25 seconds.";
- $("tags").innerHTML=current.tags.map(x=>`<span class="badge">${x}</span>`).join("");$("status").textContent="Answer naturally. Short and useful beats long and perfect."
+ $("instruction").textContent=mode==="Free Talk"?current.instruction:(mode==="Conversation"?"Speak for 2–4 minutes. Develop the topic with connected ideas and examples.":current.instruction+" Aim for 8–25 seconds.");
+ const bonus=current.bonus||suggestBonus(current);
+ $("tags").innerHTML=`<div class="small muted" style="margin-top:8px"><b>Useful phrases · bonus points</b></div>`+current.tags.map(x=>`<span class="badge">${x}</span>`).join("")+`<div class="small muted" style="margin-top:7px"><b>⭐ Stretch vocabulary</b></div>`+bonus.map(x=>`<span class="badge" style="border-color:#806c32;color:#ffe49b">${x}</span>`).join("");
+ $("status").textContent=mode==="Free Talk"?"Build a connected 3–5 minute answer. Use 2–3 stretch words naturally.":"Answer naturally. Use the phrase bank when it helps."
+}
+function suggestBonus(s){
+ const bank={"Café":["ordinare","preferire","inoltre","senza","caldo","freddo"],"Restaurant":["consigliare","saporito","piatto","ingredienti","inoltre","preferire"],"Train":["binario","ritardo","coincidenza","partenza","arrivo","prossimo"],"Hotel":["prenotazione","disponibile","servizio","rumoroso","comodo","risolvere"],"Street":["incrocio","dritto","girare","vicino","lontano","raggiungere"],"Shop":["taglia","prezzo","provare","cercare","preferire","costare"],"Meeting someone":["conoscere","interesse","da quanto tempo","invece","anche","soprattutto"],"Basketball":["squadra","allenamento","partita","migliorare","competitivo","obiettivo"],"Airport":["bagaglio","partenza","imbarco","controllo","ritardo","coincidenza"],"Beach":["ombrellone","spiaggia","mare","affollato","rilassarsi","prenotare"],"Market":["assaggiare","fresco","quantità","chilo","consigliare","preferire"],"Taxi":["destinazione","traffico","fretta","percorso","arrivare","quanto tempo"],"Work":["responsabilità","progetto","collaborare","obiettivo","migliorare","occuparsi di"],"Daily life":["abitudine","di solito","appena","durante","riuscire a","organizzare"],"Plans":["programma","organizzare","disponibile","magari","potremmo","preferire"],"Food":["saporito","ingredienti","preferire","assaggiare","tradizionale","specialità"],"Travel":["esperienza","visitare","scoprire","paesaggio","consigliare","indimenticabile"],"Weather":["soleggiato","nuvoloso","umido","temperatura","previsione","quindi"],"Phone":["prenotazione","disponibile","confermare","orario","richiamare","possibile"]};
+ return bank[category(s)]||["per esempio","inoltre","però","quindi","soprattutto","invece"];
+}
+function bonusAnalysis(text){
+ const low=text.toLowerCase(), list=[...(current.tags||[]),...(current.bonus||suggestBonus(current))];
+ return [...new Set(list.filter(x=>low.includes(x.toLowerCase())))];
 }
 function renderModes(){$("modes").innerHTML=Object.entries(MODES).map(([m,d])=>`<div class="mode ${m===mode&&!adventure?"active":""}" data-m="${m}"><b>${m}</b><span>${d}</span></div>`).join("");document.querySelectorAll("[data-m]").forEach(x=>x.onclick=()=>{adventure=null;mode=x.dataset.m;renderModes();pick()})}
 async function record(){
@@ -163,13 +184,23 @@ function evaluate(text,a){
  else if(comfort){improve=`Your answer works, but you repeated “${comfort.term}” ${comfort.count} times.`;naturalText=`Try one alternative: ${comfort.opts.join(" · ")}.`;challenge=`Retry and replace “${comfort.term}” at least once.`}
  else if(a.long>=2){improve=`You had ${a.long} pauses longer than 1.5 seconds. Keep the floor instead of searching for a perfect sentence.`;naturalText=`Use a rescue phrase: «${RESCUE[0]}» or «${RESCUE[2]}»`;challenge=`Retry with no more than one long pause.`}
  else{improve=`No high-confidence error is worth interrupting you for. Your next gain is making the response a little richer or more natural.`;naturalText=`${current.model}`;challenge=`Retry once using the model direction without memorizing it word-for-word.`}
- let overall=clamp(under*.34+italian*.25+natural*.21+flow*.20,1,10);
+ let bonusWords=bonusAnalysis(text), bonusPts=Math.min(.8,bonusWords.length*.15);
+ if(mode==="Free Talk"){
+   let links=["perché","per esempio","poi","però","quindi","inoltre","invece","alla fine","secondo me"].filter(x=>low.includes(x)).length;
+   under=clamp(6.2+Math.min(2,w.length/100)+Math.min(1.5,links*.3),5,10);
+   worked=`You produced ${w.length} transcribed words, used ${links} linking expressions, and used ${bonusWords.length} suggested/bonus words or phrases.`;
+   if(w.length<120){improve="Develop the topic further with a concrete example, a comparison, and a conclusion.";challenge="Continue or retry using example → comparison → conclusion."}
+   else if(links<3){improve="Your ideas are understandable, but they need stronger connections. Use at least three different linking phrases.";challenge="Use 3 connectors such as «per esempio», «però», «quindi», «inoltre»."}
+   else if(bonusWords.length<2){improve="Your message is clear, but you stayed mostly inside familiar vocabulary. Deliberately use 2–3 stretch words.";challenge="Use at least two stretch words naturally."}
+   naturalText=current.model;
+ }
+ let overall=clamp(under*.34+italian*.25+natural*.21+flow*.20+bonusPts,1,10);
  if(hits>=2&&!rule&&a.long===0)overall=Math.max(overall,9.0);
- return{text,w:w.length,a,under:+under.toFixed(1),italian:+italian.toFixed(1),natural:+natural.toFixed(1),flowScore:+flow.toFixed(1),overall:+overall.toFixed(1),worked,improve,naturalText,challenge,comfort}
+ return{text,w:w.length,a,under:+under.toFixed(1),italian:+italian.toFixed(1),natural:+natural.toFixed(1),flowScore:+flow.toFixed(1),overall:+overall.toFixed(1),worked,improve,naturalText,challenge,comfort,bonusWords,bonusPts}
 }
 function show(d,log){
  $("feedback").classList.add("show");$("overall").textContent=d.overall.toFixed(1);$("verdict").textContent=d.overall>=9?"Excellent — clear Italian":d.overall>=8?"Success — understood":d.overall>=7?"Understandable — improve one thing":"Retry for clarity";$("summary").textContent=d.overall>=8.5?"This response works in the real situation.":"Use the feedback below for one immediate retry.";
- $("gUnderstand").textContent=d.under;$("gItalian").textContent=d.italian;$("gNatural").textContent=d.natural;$("gFlow").textContent=d.flowScore;$("worked").textContent=d.worked;$("improve").textContent=d.improve;$("natural").textContent=d.naturalText;$("challenge").textContent=d.challenge;
+ $("gUnderstand").textContent=d.under;$("gItalian").textContent=d.italian;$("gNatural").textContent=d.natural;$("gFlow").textContent=d.flowScore;$("worked").textContent=d.worked+(d.bonusWords?.length?` ⭐ Bonus used: ${d.bonusWords.join(" · ")}.`:"");$("improve").textContent=d.improve;$("natural").textContent=d.naturalText;$("challenge").textContent=d.challenge;
  if(!retrying){first=d;$("next").classList.add("hidden");step(2)}else{step(3);$("next").classList.remove("hidden");compare(first,d)}
  if(log&&recId!==lastLog){lastLog=recId;let mins=dur/60;S.min+=mins;S.words+=d.w;S.xp+=Math.round(12+d.w/4);S.resp.push(d.a.response);S.flow.push(d.a.flow);S.today[key()]=(S.today[key()]||0)+mins;if(d.comfort){S.comfort[d.comfort.term]=(S.comfort[d.comfort.term]||0)+d.comfort.count;d.comfort.opts.forEach(x=>!S.unlocked.includes(x)&&S.unlocked.push(x))}S.hist.push({date:key(),mode:adventure?`Adventure ${adventure.city}`:mode,score:d.overall,w:d.w,r:d.a.response,f:d.a.flow,retry:retrying});S.hist=S.hist.slice(-100);save()}
  $("status").textContent=retrying?"Retry scored. Compare and continue.":"Review the three short feedback boxes, then retry."
