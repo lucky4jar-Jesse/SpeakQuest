@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#07101e">
-<title>SpeakQuest v5 — Speaking Engine — Italian Speaking RPG</title>
+<title>SpeakQuest v5.1 — Speaking Engine — Italian Speaking RPG</title>
 <style>
 :root{--bg:#07101e;--panel:#101b30;--panel2:#152541;--line:#263b60;--txt:#f4f8ff;--muted:#93a4c3;--cyan:#4dd4ff;--green:#45e3aa;--yellow:#ffd66b;--purple:#a786ff;--red:#ff7180}
 *{box-sizing:border-box} html,body{margin:0;background:radial-gradient(circle at 15% 0,#112848 0,transparent 32%),var(--bg);color:var(--txt);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
@@ -36,9 +36,16 @@ audio{width:100%;margin-top:12px}textarea{width:100%;min-height:100px;background
 <body>
 <div class="app">
 <header>
- <div class="brand"><div class="logo">SQ</div><div><h1>SpeakQuest</h1><div class="muted tiny">Italian Speaking RPG · v5 · LOCAL SPEAKING ENGINE · $0 API</div></div></div>
+ <div class="brand"><div class="logo">SQ</div><div><h1>SpeakQuest</h1><div class="muted tiny">Italian Speaking RPG · v5.1 · SPEAK → REVIEW → RETRY</div></div></div>
  <div class="stats"><div class="chip">🔥 <b id="streak">1</b> day streak</div><div class="chip">⚡ <b id="xpTop">0</b> XP</div><div class="chip">🎙 <b id="monthMinTop">0</b> min this month</div></div>
 </header>
+<div class="card" style="padding:12px 15px;margin-bottom:16px">
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center">
+    <div id="stepSpeak" style="padding:9px;border-radius:12px;background:rgba(77,212,255,.14);border:1px solid rgba(77,212,255,.35)"><b>1 · Speak</b><div class="tiny muted">Record naturally</div></div>
+    <div id="stepReview" style="padding:9px;border-radius:12px;background:#091425;border:1px solid var(--line)"><b>2 · Review</b><div class="tiny muted">Score + fixes</div></div>
+    <div id="stepRetry" style="padding:9px;border-radius:12px;background:#091425;border:1px solid var(--line)"><b>3 · Retry</b><div class="tiny muted">Beat attempt 1</div></div>
+  </div>
+</div>
 
 <section id="play" class="screen active">
 <div class="layout">
@@ -48,26 +55,22 @@ audio{width:100%;margin-top:12px}textarea{width:100%;min-height:100px;background
   <h2 id="missionTitle">Il treno è in ritardo.</h2>
   <div class="prompt" id="missionPrompt">You are at Roma Termini. Your train is delayed 90 minutes. Explain what happened, ask what your options are, and decide what you will do next. Aim for 2–3 minutes.</div>
   <div class="tags" id="missionTags"></div>
-  <div style="margin-top:14px;padding:11px 13px;border-radius:13px;background:rgba(69,227,170,.08);border:1px solid rgba(69,227,170,.25);color:#c9ffe9">
-   <b>Speaking Engine v5:</b> your recording is analyzed locally for pauses, silence and continuity, then a small Whisper model attempts to transcribe the audio directly in your browser. No paid API key is used.
-  </div>
+  <div class="tiny muted" style="margin-top:12px">Speak naturally. Don’t stop to fix every mistake—the retry round is where you improve it.</div>
   <div class="record">
    <div class="row"><div><div class="kicker" style="color:var(--green)">Your turn</div><div class="status" id="status">Tap record and speak in Italian.</div></div><div class="timer" id="timer">00:00</div></div>
    <div class="buttons">
     <button class="primary" id="recordBtn">🎙 Start recording</button>
-    <button class="secondary" id="scoreBtn" disabled>🧠 Analyze + Transcribe</button>
-    <button class="ghost" id="newBtn">↻ New challenge</button>
+    <button class="secondary" id="scoreBtn" disabled>✨ Analyze my speech</button>
+    <button class="ghost" id="newBtn">Skip mission</button>
    </div>
    <audio id="playback" controls style="display:none"></audio>
-   <div style="margin-top:14px;padding:12px;border:1px solid rgba(77,212,255,.22);background:rgba(77,212,255,.07);border-radius:13px">
-     <b>After you speak</b>
-     <div class="tiny muted" style="margin-top:4px">Tap <b>Analyze + Transcribe</b>. SpeakQuest will measure the audio waveform and then try local Whisper transcription. If local transcription is unavailable on your device, you can still edit or enter the transcript manually below and score it with the same audio metrics.</div>
-   </div>
-   <div class="kicker" style="margin-top:14px;color:var(--yellow)">Transcript — automatic when supported, editable anytime</div><textarea id="manualText" placeholder="After recording, tap here and use the iPhone keyboard microphone to dictate what you said in Italian. You can also type or paste your transcript."></textarea>
+   <div id="transcriptTools" style="display:none">
+   <div class="kicker" style="margin-top:14px;color:var(--yellow)">Transcript</div><textarea id="manualText" placeholder="After recording, tap here and use the iPhone keyboard microphone to dictate what you said in Italian. You can also type or paste your transcript."></textarea>
    <div class="buttons" style="margin-top:8px">
-      <button class="primary" id="scoreTextBtn">✓ Re-score edited transcript</button>
-      <button class="secondary" id="retryBtn" style="display:none">🔁 Retry this mission</button><button class="ghost" id="copyCoachBtn">📋 Copy for AI Coach</button>
+      <button class="primary" id="scoreTextBtn">Re-check edited transcript</button>
+      <button class="secondary" id="retryBtn" style="display:none">🔁 Retry now</button><button class="primary" id="nextMissionBtn" style="display:none">Next mission →</button><button class="ghost" id="copyCoachBtn">📋 Copy for deeper AI feedback</button>
     </div>
+   </div>
    <div class="xpflash" id="xpflash"></div>
    <div id="engineProgress" style="display:none;margin-top:12px;padding:12px;border:1px solid var(--line);border-radius:13px;background:#091425">
     <b id="engineStage">Preparing speaking engine…</b>
@@ -78,11 +81,11 @@ audio{width:100%;margin-top:12px}textarea{width:100%;min-height:100px;background
    <div class="results" id="results">
     <div class="result"><div class="muted tiny">Overall speaking score</div><div class="score" id="overall">—</div><div id="summary"></div></div>
     <div class="result"><div class="muted tiny">Transcript</div><div id="transcript">—</div></div>
-    <div class="result"><div class="muted tiny">Most important corrections</div><div id="corrections">—</div></div>
+    <div class="result"><div class="muted tiny">Fix these</div><div id="corrections">—</div></div>
     <div class="result"><div class="muted tiny">Instant fix strategy</div><div id="natural">—</div></div>
-    <div class="result"><div class="muted tiny">Skill scores</div><div id="skills">—</div></div>
-    <div class="result"><div class="muted tiny">Audio fluency</div><div id="audioMetrics">—</div></div>
-    <div class="result"><div class="muted tiny">Coach challenge</div><div id="coach">—</div></div>
+    <div class="result"><div class="muted tiny">Score breakdown</div><div id="skills">—</div></div>
+    <div class="result"><div class="muted tiny">Fluency details</div><div id="audioMetrics">—</div></div>
+    <div class="result"><div class="muted tiny">Retry target</div><div id="coach">—</div></div>
    </div>
   </div>
  </div>
@@ -151,7 +154,7 @@ audio{width:100%;margin-top:12px}textarea{width:100%;min-height:100px;background
 <section id="settings" class="screen">
 <div class="card">
  <div class="kicker">Setup</div><h2>Safari + microphone</h2>
- <p class="prompt">SpeakQuest v5 analyzes the recording directly in your browser. Audio waveform analysis measures silence and hesitation locally. Local Whisper transcription runs with Transformers.js and downloads a small speech model the first time you use it. The model is then normally cached by the browser.</p>
+ <p class="prompt">Your audio stays in the browser. SpeakQuest measures pauses and continuity locally and uses a local Whisper model for transcription. The first transcription may take longer while the model loads.</p>
  <div id="compat" class="result"></div>
  <div class="card" style="margin-top:18px;background:#091425">
   <div class="kicker">Free Version</div>
@@ -212,6 +215,7 @@ const MODES={
 }
 let mode="Daily Mission", mediaRecorder=null, chunks=[], audioBlob=null, startTime=0, interval=null, lastDuration=0;
 let lastAudioAnalysis=null, whisperTranscriber=null, attemptOne=null, isRetry=false, currentMissionKey="";
+let missionSerial=0, recordingSerial=0, lastLoggedRecordingSerial=-1, analyzing=false;
 const $=id=>document.getElementById(id);
 const state=JSON.parse(localStorage.getItem("sq_state")||'{"goalHours":30,"minutes":0,"sessions":0,"xp":0,"scores":[],"history":[],"streak":1,"errors":{},"words":0,"uniqueWords":[],"wpm":[],"pauseRates":[],"retryGains":[]}');
 if(!state.errors) state.errors={};
@@ -252,18 +256,48 @@ function renderModes(){
  $("modeGrid").innerHTML=Object.keys(MODES).map(m=>`<div class="mode ${m===mode?"active":""}" data-mode="${m}"><b>${m}</b><span>${m==="Daily Mission"?"Daily speaking quest":m==="Rapid Fire"?"Fast spontaneous answers":m==="Story Mode"?"Longer connected speech":m==="Role Play"?"Real-life conversations":"Adaptive correction"}</span></div>`).join("");
  document.querySelectorAll(".mode").forEach(el=>el.onclick=()=>{mode=el.dataset.mode;renderModes();newChallenge()});
 }
+
+function setWorkflowStep(step){
+ const map={speak:"stepSpeak",review:"stepReview",retry:"stepRetry"};
+ for(const [k,id] of Object.entries(map)){
+   const el=$(id); if(!el) continue;
+   const active=k===step;
+   el.style.background=active?(k==="review"?"rgba(255,214,107,.12)":k==="retry"?"rgba(69,227,170,.12)":"rgba(77,212,255,.14)"):"#091425";
+   el.style.borderColor=active?(k==="review"?"rgba(255,214,107,.4)":k==="retry"?"rgba(69,227,170,.4)":"rgba(77,212,255,.35)"):"var(--line)";
+ }
+}
+function resetMissionUI(){
+ $("results").classList.remove("show");
+ $("xpflash").classList.remove("show");
+ $("comparison").style.display="none";
+ $("retryBtn").style.display="none";
+ $("nextMissionBtn").style.display="none";
+ $("transcriptTools").style.display="none";
+ $("engineProgress").style.display="none";
+ $("manualText").value="";
+ $("playback").style.display="none";
+ $("timer").textContent="00:00";
+}
 function newChallenge(){
+ missionSerial++;
+ analyzing=false;
  let arr=MODES[mode], item=arr[Math.floor(Math.random()*arr.length)];
  if(mode==="Tutor Mode"){
    const top=Object.entries(state.errors||{}).sort((a,b)=>b[1]-a[1])[0];
    if(top){
      const rule=COMMON_RULES.find(r=>r.id===top[0]);
-     if(rule) item=[`Tutor target: ${rule.label}`,`Speak for 60–90 seconds on any familiar topic. Deliberately create at least two sentences where you can practice this target: ${rule.fix}`,["targeted practice","repeat","self-correction"]];
+     if(rule) item=[`Tutor target: ${rule.label}`,`Speak for 60–90 seconds on a familiar topic. Deliberately practice this target twice: ${rule.fix}`,["targeted practice","repeat","self-correction"]];
    }
  }
- $("modeLabel").textContent=mode; $("missionTitle").textContent=item[0]; $("missionPrompt").textContent=item[1];
+ $("modeLabel").textContent=mode;
+ $("missionTitle").textContent=item[0];
+ $("missionPrompt").textContent=item[1];
  $("missionTags").innerHTML=item[2].map(t=>`<span class="tag">${t}</span>`).join("");
- $("results").classList.remove("show");$("xpflash").classList.remove("show");$("comparison").style.display="none";$("retryBtn").style.display="none";$("manualText").value="";audioBlob=null;lastAudioAnalysis=null;attemptOne=null;isRetry=false;currentMissionKey=$("missionTitle").textContent;$("scoreBtn").disabled=true;$("playback").style.display="none";$("status").textContent="Tap record and speak naturally in Italian.";
+ audioBlob=null;lastAudioAnalysis=null;attemptOne=null;isRetry=false;currentMissionKey=$("missionTitle").textContent;
+ $("scoreBtn").disabled=true;$("newBtn").disabled=false;
+ resetMissionUI();
+ $("status").textContent="Tap Start recording and answer naturally.";
+ setWorkflowStep("speak");
 }
 function supportedType(){
  const types=["audio/mp4","audio/webm;codecs=opus","audio/webm","audio/ogg;codecs=opus"];
@@ -280,10 +314,10 @@ async function toggleRecord(){
    lastDuration=(Date.now()-startTime)/1000; clearInterval(interval); $("timer").textContent=formatTime(lastDuration);
    audioBlob=new Blob(chunks,{type:mediaRecorder.mimeType||type||"audio/mp4"});
    $("playback").src=URL.createObjectURL(audioBlob);$("playback").style.display="block";$("scoreBtn").disabled=false;
-   $("recordBtn").className="primary";$("recordBtn").textContent="🎙 Record again";$("status").textContent="✅ Recording saved. Tap Analyze + Transcribe to measure your pauses and create the transcript.";
+   $("recordBtn").className="primary";$("recordBtn").textContent="🎙 Record again";$("status").textContent="Recording saved. Tap Analyze my speech.";$("newBtn").disabled=false;
    stream.getTracks().forEach(t=>t.stop());
   };
-  mediaRecorder.start(500); startTime=Date.now(); $("recordBtn").className="recording";$("recordBtn").textContent="■ Stop recording";$("status").textContent="Listening… keep speaking.";
+  recordingSerial++; mediaRecorder.start(500); startTime=Date.now(); $("recordBtn").className="recording";$("recordBtn").textContent="■ Stop recording";$("status").textContent="Listening… keep speaking naturally.";$("newBtn").disabled=true;
   interval=setInterval(()=>$("timer").textContent=formatTime((Date.now()-startTime)/1000),250);
  }catch(e){$("status").textContent="Microphone access failed: "+(e.message||e.name)+". On Safari, confirm microphone permission and HTTPS."}
 }
@@ -468,7 +502,12 @@ function combinedScore(text,audio){
 }
 async function analyzeAndTranscribe(){
  if(!audioBlob){$("status").textContent="Record an answer first.";return}
- $("scoreBtn").disabled=true;
+ if(analyzing)return;
+ analyzing=true;
+ const analysisMission=missionSerial;
+ const analysisRecording=recordingSerial;
+ $("scoreBtn").disabled=true;$("newBtn").disabled=true;
+ setWorkflowStep("review");
  $("engineProgress").style.display="block";
  $("engineStage").textContent="Analyzing your recording…";$("engineFill").style.width="10%";
  $("engineDetail").textContent="Measuring silence, pauses and continuity.";
@@ -482,16 +521,19 @@ async function analyzeAndTranscribe(){
      const result=await transcribeLocal(pcm);
      text=(result&&result.text||"").trim();
      $("manualText").value=text;
+     $("transcriptTools").style.display="block";
      $("engineFill").style.width="90%";
    }catch(transErr){
      console.error(transErr);
      $("engineStage").textContent="Audio analyzed; local transcription unavailable";
      $("engineDetail").textContent="Your pause metrics are ready. Enter/edit the transcript below (iPhone dictation is fine) and tap Re-score edited transcript.";
      $("engineFill").style.width="75%";
+     $("transcriptTools").style.display="block";
      $("manualText").focus();
-     $("scoreBtn").disabled=false;
+     $("scoreBtn").disabled=false;$("newBtn").disabled=false;analyzing=false;
      return;
    }
+   if(analysisMission!==missionSerial){ analyzing=false; return; }
    if(!text){
      $("engineStage").textContent="No transcript detected";
      $("engineDetail").textContent="The audio metrics are ready. Add the transcript manually and re-score.";
@@ -500,13 +542,14 @@ async function analyzeAndTranscribe(){
    const data=combinedScore(text,lastAudioAnalysis);
    $("engineFill").style.width="100%";$("engineStage").textContent="Speaking analysis complete";
    $("engineDetail").textContent="Review your fixes, then Retry immediately.";
-   showSpeakingResult(data,lastAudioAnalysis.duration);
+   showSpeakingResult(data,lastAudioAnalysis.duration,{log:true,recordingId:analysisRecording});
+   analyzing=false;$("newBtn").disabled=false;
  }catch(e){
    console.error(e);
    $("status").textContent="Analysis failed: "+(e.message||e);
    $("engineStage").textContent="Could not analyze this recording";
    $("engineDetail").textContent="Try a shorter recording or reload Safari.";
-   $("scoreBtn").disabled=false;
+   $("scoreBtn").disabled=false;$("newBtn").disabled=false;analyzing=false;
  }
 }
 function rescoreEdited(){
@@ -516,12 +559,12 @@ function rescoreEdited(){
    const dur=Math.max(lastDuration,30);
    lastAudioAnalysis={duration:dur,pauses:[],pauseCount:0,planningPauseCount:0,longPauseCount:0,longestPause:0,silencePct:0,pauseRate:0};
  }
- showSpeakingResult(combinedScore(text,lastAudioAnalysis),lastAudioAnalysis.duration);
+ showSpeakingResult(combinedScore(text,lastAudioAnalysis),lastAudioAnalysis.duration,{log:false,edited:true});
 }
 function metricLine(d){
  return `WPM <b>${Math.round(d.wpm)}</b><br>Long pauses <b>${d.audio.longPauseCount}</b><br>Longest pause <b>${d.audio.longestPause.toFixed(1)}s</b><br>Silence/hesitation <b>${d.audio.silencePct.toFixed(0)}%</b><br>Hesitation fillers <b>${d.hesitation}</b><br>Italian discourse markers <b>${d.discourse}</b>`;
 }
-function showSpeakingResult(d,duration){
+function showSpeakingResult(d,duration,opts={log:true,edited:false,recordingId:recordingSerial}){
  $("overall").textContent=d.score.toFixed(1)+" / 10";
  $("summary").textContent=d.summary;
  $("transcript").textContent=d.transcript;
@@ -549,10 +592,12 @@ function showSpeakingResult(d,duration){
       <div class="dashbox"><div class="tiny muted">Grammar target errors</div><b>${attemptOne.corrections.length} → ${d.corrections.length}</b></div>
     </div>
     <div class="tiny muted" style="margin-top:8px">${pauseDelta>0?`You removed ${pauseDelta} long pause${pauseDelta===1?"":"s"}. `:""}${fillerDelta>0?`You removed ${fillerDelta} hesitation filler${fillerDelta===1?"":"s"}.`:""}</div>`;
- }else{
+ }else if(!opts.edited){
    attemptOne=d;
  }
 
+ if(opts.log && opts.recordingId!==lastLoggedRecordingSerial){
+ lastLoggedRecordingSerial=opts.recordingId;
  state.xp+=d.xp;state.words+=d.words;
  state.uniqueWords=[...new Set([...(state.uniqueWords||[]),...d.uniqueWords])].slice(0,5000);
  state.wpm.push(d.wpm);state.pauseRates.push(d.audio.pauseRate);
@@ -560,19 +605,31 @@ function showSpeakingResult(d,duration){
  state.history.push({mode,minutes:mins,score:d.score,date:new Date().toLocaleDateString(),words:d.words,wpm:d.wpm,longPauses:d.audio.longPauseCount,fillers:d.hesitation,retry:isRetry});
  if(state.history.length>150)state.history=state.history.slice(-150);
  save();
- $("xpflash").textContent=`+${d.xp} XP · ${mins.toFixed(1)} speaking min logged · ${isRetry?"retry":"attempt"} scored`;
+ $("xpflash").textContent=`+${d.xp} XP · ${mins.toFixed(1)} speaking min logged`;
  $("xpflash").classList.add("show");
- $("status").textContent=isRetry?"Retry scored. Review the comparison.":"Attempt 1 scored. Review the 3 fixes, then Retry immediately.";
+ }
+ if(opts.edited){
+   $("status").textContent="Feedback updated from your edited transcript. Speaking minutes and XP were not counted again.";
+ }else if(isRetry){
+   $("status").textContent="Retry scored. Compare Attempt 1 vs Attempt 2.";
+   $("nextMissionBtn").style.display="inline-block";
+   setWorkflowStep("retry");
+ }else{
+   $("status").textContent="Review your fixes, then retry the same mission.";
+   $("retryBtn").style.display="inline-block";
+   setWorkflowStep("review");
+ }
  $("scoreBtn").disabled=false;
 }
 function beginRetry(){
  if(!attemptOne)return;
  isRetry=true;audioBlob=null;lastAudioAnalysis=null;lastDuration=0;
  $("results").classList.remove("show");$("xpflash").classList.remove("show");
- $("engineProgress").style.display="none";$("manualText").value="";$("playback").style.display="none";
- $("scoreBtn").disabled=true;$("retryBtn").style.display="none";
- $("status").textContent="Attempt 2: repeat the SAME mission and focus on the fix above.";
+ $("engineProgress").style.display="none";$("transcriptTools").style.display="none";$("manualText").value="";$("playback").style.display="none";
+ $("scoreBtn").disabled=true;$("retryBtn").style.display="none";$("nextMissionBtn").style.display="none";
+ $("status").textContent="Retry the SAME mission. Focus on the first fix you just saw.";
  $("timer").textContent="00:00";
+ setWorkflowStep("retry");
  window.scrollTo({top:0,behavior:"smooth"});
 }
 function buildCoachPrompt(){
@@ -618,8 +675,9 @@ $("recordBtn").onclick=toggleRecord;
 $("scoreBtn").onclick=analyzeAndTranscribe;
 $("scoreTextBtn").onclick=rescoreEdited;
 $("retryBtn").onclick=beginRetry;
+$("nextMissionBtn").onclick=newChallenge;
 $("copyCoachBtn").onclick=copyCoach;
-$("newBtn").onclick=newChallenge;
+$("newBtn").onclick=()=>{if(!analyzing)newChallenge()};
 $("saveGoal").onclick=()=>{state.goalHours=Math.max(1,Number($("goalHours").value)||30);save()};
 if($("resetDataBtn")) $("resetDataBtn").onclick=()=>{
  if(confirm("Reset all SpeakQuest progress stored on this device?")){
