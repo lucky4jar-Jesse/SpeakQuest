@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#07101e">
-<title>SpeakQuest v3 — Italian Speaking RPG</title>
+<title>SpeakQuest v5 — Speaking Engine — Italian Speaking RPG</title>
 <style>
 :root{--bg:#07101e;--panel:#101b30;--panel2:#152541;--line:#263b60;--txt:#f4f8ff;--muted:#93a4c3;--cyan:#4dd4ff;--green:#45e3aa;--yellow:#ffd66b;--purple:#a786ff;--red:#ff7180}
 *{box-sizing:border-box} html,body{margin:0;background:radial-gradient(circle at 15% 0,#112848 0,transparent 32%),var(--bg);color:var(--txt);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
@@ -36,7 +36,7 @@ audio{width:100%;margin-top:12px}textarea{width:100%;min-height:100px;background
 <body>
 <div class="app">
 <header>
- <div class="brand"><div class="logo">SQ</div><div><h1>SpeakQuest</h1><div class="muted tiny">Italian Speaking RPG · v3 · built around speaking time</div></div></div>
+ <div class="brand"><div class="logo">SQ</div><div><h1>SpeakQuest</h1><div class="muted tiny">Italian Speaking RPG · v5 · LOCAL SPEAKING ENGINE · $0 API</div></div></div>
  <div class="stats"><div class="chip">🔥 <b id="streak">1</b> day streak</div><div class="chip">⚡ <b id="xpTop">0</b> XP</div><div class="chip">🎙 <b id="monthMinTop">0</b> min this month</div></div>
 </header>
 
@@ -48,23 +48,40 @@ audio{width:100%;margin-top:12px}textarea{width:100%;min-height:100px;background
   <h2 id="missionTitle">Il treno è in ritardo.</h2>
   <div class="prompt" id="missionPrompt">You are at Roma Termini. Your train is delayed 90 minutes. Explain what happened, ask what your options are, and decide what you will do next. Aim for 2–3 minutes.</div>
   <div class="tags" id="missionTags"></div>
+  <div style="margin-top:14px;padding:11px 13px;border-radius:13px;background:rgba(69,227,170,.08);border:1px solid rgba(69,227,170,.25);color:#c9ffe9">
+   <b>Speaking Engine v5:</b> your recording is analyzed locally for pauses, silence and continuity, then a small Whisper model attempts to transcribe the audio directly in your browser. No paid API key is used.
+  </div>
   <div class="record">
    <div class="row"><div><div class="kicker" style="color:var(--green)">Your turn</div><div class="status" id="status">Tap record and speak in Italian.</div></div><div class="timer" id="timer">00:00</div></div>
    <div class="buttons">
     <button class="primary" id="recordBtn">🎙 Start recording</button>
-    <button class="secondary" id="scoreBtn" disabled>✨ Transcribe + score</button>
+    <button class="secondary" id="scoreBtn" disabled>🧠 Analyze + Transcribe</button>
     <button class="ghost" id="newBtn">↻ New challenge</button>
    </div>
    <audio id="playback" controls style="display:none"></audio>
-   <textarea id="manualText" placeholder="Optional fallback: type/paste Italian here if you cannot use the microphone."></textarea>
-   <button class="ghost" id="scoreTextBtn" style="margin-top:8px">Score typed Italian</button>
+   <div style="margin-top:14px;padding:12px;border:1px solid rgba(77,212,255,.22);background:rgba(77,212,255,.07);border-radius:13px">
+     <b>After you speak</b>
+     <div class="tiny muted" style="margin-top:4px">Tap <b>Analyze + Transcribe</b>. SpeakQuest will measure the audio waveform and then try local Whisper transcription. If local transcription is unavailable on your device, you can still edit or enter the transcript manually below and score it with the same audio metrics.</div>
+   </div>
+   <div class="kicker" style="margin-top:14px;color:var(--yellow)">Transcript — automatic when supported, editable anytime</div><textarea id="manualText" placeholder="After recording, tap here and use the iPhone keyboard microphone to dictate what you said in Italian. You can also type or paste your transcript."></textarea>
+   <div class="buttons" style="margin-top:8px">
+      <button class="primary" id="scoreTextBtn">✓ Re-score edited transcript</button>
+      <button class="secondary" id="retryBtn" style="display:none">🔁 Retry this mission</button><button class="ghost" id="copyCoachBtn">📋 Copy for AI Coach</button>
+    </div>
    <div class="xpflash" id="xpflash"></div>
+   <div id="engineProgress" style="display:none;margin-top:12px;padding:12px;border:1px solid var(--line);border-radius:13px;background:#091425">
+    <b id="engineStage">Preparing speaking engine…</b>
+    <div class="bar" style="margin-top:8px"><div class="fill" id="engineFill" style="width:5%"></div></div>
+    <div class="tiny muted" id="engineDetail" style="margin-top:7px">The first local transcription can take longer while the speech model downloads.</div>
+   </div>
+   <div id="comparison" style="display:none;margin-top:14px;padding:14px;border:1px solid rgba(69,227,170,.3);background:rgba(69,227,170,.07);border-radius:15px"></div>
    <div class="results" id="results">
-    <div class="result"><div class="muted tiny">Overall</div><div class="score" id="overall">—</div><div id="summary"></div></div>
+    <div class="result"><div class="muted tiny">Overall speaking score</div><div class="score" id="overall">—</div><div id="summary"></div></div>
     <div class="result"><div class="muted tiny">Transcript</div><div id="transcript">—</div></div>
     <div class="result"><div class="muted tiny">Most important corrections</div><div id="corrections">—</div></div>
-    <div class="result"><div class="muted tiny">Natural Italian</div><div id="natural">—</div></div>
+    <div class="result"><div class="muted tiny">Instant fix strategy</div><div id="natural">—</div></div>
     <div class="result"><div class="muted tiny">Skill scores</div><div id="skills">—</div></div>
+    <div class="result"><div class="muted tiny">Audio fluency</div><div id="audioMetrics">—</div></div>
     <div class="result"><div class="muted tiny">Coach challenge</div><div id="coach">—</div></div>
    </div>
   </div>
@@ -95,9 +112,9 @@ audio{width:100%;margin-top:12px}textarea{width:100%;min-height:100px;background
  <p class="prompt">A speaking-first campaign. Complete conversations to move from city to city. Each location introduces recurring characters, practical situations, and vocabulary.</p>
  <div class="dashboard-grid">
   <div class="dashbox"><div class="muted tiny">Chapter 1</div><b>Roma</b><p class="tiny">Train station, café, hotel, directions</p><button class="primary" onclick="startAdventure('Roma')">Enter Rome</button></div>
-  <div class="dashbox"><div class="muted tiny">Chapter 2</div><b>Napoli 🔒</b><p class="tiny">Street food, opinions, storytelling</p></div>
-  <div class="dashbox"><div class="muted tiny">Chapter 3</div><b>Sicilia 🔒</b><p class="tiny">Longer conversations and stories</p></div>
-  <div class="dashbox"><div class="muted tiny">Final</div><b>Boss Battle 🔒</b><p class="tiny">15-minute all-Italian mission</p></div>
+  <div class="dashbox"><div class="muted tiny">Chapter 2 · unlock 250 XP</div><b>Napoli</b><p class="tiny">Street food, opinions, storytelling</p><button class="secondary" onclick="startAdventure('Napoli')">Enter Naples</button></div>
+  <div class="dashbox"><div class="muted tiny">Chapter 3 · unlock 600 XP</div><b>Sicilia</b><p class="tiny">Longer conversations, family, travel and culture</p><button class="secondary" onclick="startAdventure('Sicilia')">Enter Sicily</button></div>
+  <div class="dashbox"><div class="muted tiny">Boss Battle · unlock 1000 XP</div><b>La sfida finale</b><p class="tiny">10-minute all-Italian mission using multiple tenses and connectors.</p><button class="secondary" onclick="startBoss()">Start Boss</button></div>
  </div>
 </div>
 </section>
@@ -112,8 +129,18 @@ audio{width:100%;margin-top:12px}textarea{width:100%;min-height:100px;background
   <div class="dashbox"><div class="muted tiny">Sessions</div><b id="dSessions">0</b></div>
   <div class="dashbox"><div class="muted tiny">Average score</div><b id="dScore">—</b></div>
   <div class="dashbox"><div class="muted tiny">XP earned</div><b id="dXp">0</b></div>
+  <div class="dashbox"><div class="muted tiny">Words logged</div><b id="dWords">0</b></div>
+  <div class="dashbox"><div class="muted tiny">Unique words</div><b id="dUnique">0</b></div>
+  <div class="dashbox"><div class="muted tiny">Avg WPM</div><b id="dWpm">—</b></div>
+  <div class="dashbox"><div class="muted tiny">Long pauses / min</div><b id="dPauses">—</b></div>
+  <div class="dashbox"><div class="muted tiny">Retry improvement</div><b id="dImprove">—</b></div>
  </div>
  <div class="goal-edit"><input id="goalHours" type="number" min="1" max="200" value="30"><button class="secondary" id="saveGoal">Set monthly hours</button></div>
+</div>
+<div class="card" style="margin-top:18px">
+ <div class="kicker">Tutor Memory</div>
+ <h3>Recurring patterns</h3>
+ <div id="errorMemory" class="prompt" style="margin-top:10px"></div>
 </div>
 <div class="card" style="margin-top:18px">
  <div class="kicker">Recent Sessions</div>
@@ -124,20 +151,26 @@ audio{width:100%;margin-top:12px}textarea{width:100%;min-height:100px;background
 <section id="settings" class="screen">
 <div class="card">
  <div class="kicker">Setup</div><h2>Safari + microphone</h2>
- <p class="prompt">For iPhone/iPad Safari, open SpeakQuest from an HTTPS URL, allow microphone access when prompted, and keep the page active while recording. Audio is recorded in the format Safari reports as supported, then uploaded for transcription and scoring.</p>
+ <p class="prompt">SpeakQuest v5 analyzes the recording directly in your browser. Audio waveform analysis measures silence and hesitation locally. Local Whisper transcription runs with Transformers.js and downloads a small speech model the first time you use it. The model is then normally cached by the browser.</p>
  <div id="compat" class="result"></div>
  <div class="card" style="margin-top:18px;background:#091425">
-  <div class="kicker">AI Connection</div>
-  <h3>Scoring server URL</h3>
-  <p class="prompt tiny">GitHub Pages hosts the game, but real transcription/scoring must run on a separate secure server. Paste that server URL here once it is deployed. Example: <b>https://speakquest-api.onrender.com</b></p>
-  <input id="backendUrl" type="url" placeholder="https://your-backend.example.com" style="width:100%;background:#07111f;color:white;border:1px solid var(--line);border-radius:10px;padding:11px">
-  <div class="buttons" style="margin-top:9px">
-   <button class="secondary" id="saveBackend">Save server URL</button>
-   <button class="ghost" id="testBackend">Test connection</button>
+  <div class="kicker">Free Version</div>
+  <h3>Local speech analysis + local transcription</h3>
+  <p class="prompt tiny">No OpenAI API key or Render server is required. Audio analysis is local. The browser downloads the speech-recognition model from Hugging Face/jsDelivr when local transcription is first used.</p>
+  <div class="result" style="display:block">
+    <b>How scoring works</b><br>
+    Fluency = speaking rate + pause frequency + speech continuity<br>
+    Audio = silence %, long pauses and hesitation profile<br>
+    Transcript = vocabulary, connectors, grammar targets and mission words<br>
+    Retry = Attempt 2 is compared directly against Attempt 1<br>
+    Tutor Mode = recurring patterns and weak metrics are saved on this device
   </div>
-  <div class="status" id="backendStatus"></div>
- </div>
-</div>
+  <div class="buttons" style="margin-top:12px">
+    <button class="ghost" id="resetDataBtn">Reset local progress</button>
+    <button class="ghost" id="exportDataBtn">Export progress</button>
+  </div>
+  <div class="status" id="freeStatus"></div>
+ </div></div>
 </section>
 </div>
 
@@ -178,9 +211,15 @@ const MODES={
  ]
 }
 let mode="Daily Mission", mediaRecorder=null, chunks=[], audioBlob=null, startTime=0, interval=null, lastDuration=0;
+let lastAudioAnalysis=null, whisperTranscriber=null, attemptOne=null, isRetry=false, currentMissionKey="";
 const $=id=>document.getElementById(id);
-const state=JSON.parse(localStorage.getItem("sq_state")||'{"goalHours":30,"minutes":0,"sessions":0,"xp":0,"scores":[],"history":[],"streak":1,"backendUrl":""}');
-if(state.backendUrl===undefined) state.backendUrl="";
+const state=JSON.parse(localStorage.getItem("sq_state")||'{"goalHours":30,"minutes":0,"sessions":0,"xp":0,"scores":[],"history":[],"streak":1,"errors":{},"words":0,"uniqueWords":[],"wpm":[],"pauseRates":[],"retryGains":[]}');
+if(!state.errors) state.errors={};
+if(!state.words) state.words=0;
+if(!state.uniqueWords) state.uniqueWords=[];
+if(!state.wpm) state.wpm=[];
+if(!state.pauseRates) state.pauseRates=[];
+if(!state.retryGains) state.retryGains=[];
 function save(){localStorage.setItem("sq_state",JSON.stringify(state));renderStats()}
 function monthLabel(){return new Date().toLocaleString(undefined,{month:"long",year:"numeric"})}
 function renderStats(){
@@ -196,17 +235,35 @@ function renderStats(){
  const avg=state.scores.length?(state.scores.reduce((a,b)=>a+b,0)/state.scores.length).toFixed(1):"—"; $("avgScore").textContent=avg;
  $("monthName").textContent=monthLabel(); $("dashGoalCaption").textContent=`${Math.round(state.minutes)} of ${goal} minutes`; $("dashPct").textContent=pct+"%"; $("dashFill").style.width=pct+"%";
  $("dMinutes").textContent=Math.round(state.minutes)+" min"; $("dSessions").textContent=state.sessions; $("dScore").textContent=avg; $("dXp").textContent=state.xp; $("goalHours").value=state.goalHours;
- $("history").innerHTML=state.history.length?state.history.slice(-8).reverse().map(h=>`<div style="padding:9px 0;border-bottom:1px solid #233756"><b>${h.mode}</b> · ${h.minutes.toFixed(1)} min · ${h.score}/10 <span class="muted">— ${h.date}</span></div>`).join(""):"No scored sessions yet.";
+ if($("dWords")) $("dWords").textContent=state.words||0;
+ if($("dUnique")) $("dUnique").textContent=(state.uniqueWords||[]).length;
+ const mean=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null;
+ const avgW=mean(state.wpm||[]), avgP=mean(state.pauseRates||[]), avgG=mean(state.retryGains||[]);
+ if($("dWpm")) $("dWpm").textContent=avgW?Math.round(avgW):"—";
+ if($("dPauses")) $("dPauses").textContent=avgP?avgP.toFixed(1):"—";
+ if($("dImprove")) $("dImprove").textContent=avgG!==null?(avgG>=0?"+":"")+avgG.toFixed(1):"—";
+ const errEntries=Object.entries(state.errors||{}).sort((a,b)=>b[1]-a[1]).slice(0,6);
+ if($("errorMemory")) $("errorMemory").innerHTML=errEntries.length
+   ? errEntries.map(([id,n])=>{const r=COMMON_RULES.find(x=>x.id===id);return `<div style="padding:8px 0;border-bottom:1px solid #233756"><b>${escapeHtml(r?r.label:id)}</b> · detected ${n} time${n===1?"":"s"}<div class="tiny muted">${escapeHtml(r?r.fix:"")}</div></div>`}).join("")
+   : "No recurring patterns detected yet. Complete several transcript-scored sessions and Tutor Mode will begin building your practice targets.";
+ $("history").innerHTML=state.history.length?state.history.slice(-8).reverse().map(h=>`<div style="padding:9px 0;border-bottom:1px solid #233756"><b>${h.mode}${h.retry?" · Retry":""}</b> · ${h.minutes.toFixed(1)} min · ${h.score}/10${h.wpm?` · ${Math.round(h.wpm)} WPM`:""}${h.longPauses!==undefined?` · ${h.longPauses} long pauses`:""} <span class="muted">— ${h.date}</span></div>`).join(""):"No scored sessions yet.";
 }
 function renderModes(){
  $("modeGrid").innerHTML=Object.keys(MODES).map(m=>`<div class="mode ${m===mode?"active":""}" data-mode="${m}"><b>${m}</b><span>${m==="Daily Mission"?"Daily speaking quest":m==="Rapid Fire"?"Fast spontaneous answers":m==="Story Mode"?"Longer connected speech":m==="Role Play"?"Real-life conversations":"Adaptive correction"}</span></div>`).join("");
  document.querySelectorAll(".mode").forEach(el=>el.onclick=()=>{mode=el.dataset.mode;renderModes();newChallenge()});
 }
 function newChallenge(){
- const arr=MODES[mode], item=arr[Math.floor(Math.random()*arr.length)];
+ let arr=MODES[mode], item=arr[Math.floor(Math.random()*arr.length)];
+ if(mode==="Tutor Mode"){
+   const top=Object.entries(state.errors||{}).sort((a,b)=>b[1]-a[1])[0];
+   if(top){
+     const rule=COMMON_RULES.find(r=>r.id===top[0]);
+     if(rule) item=[`Tutor target: ${rule.label}`,`Speak for 60–90 seconds on any familiar topic. Deliberately create at least two sentences where you can practice this target: ${rule.fix}`,["targeted practice","repeat","self-correction"]];
+   }
+ }
  $("modeLabel").textContent=mode; $("missionTitle").textContent=item[0]; $("missionPrompt").textContent=item[1];
  $("missionTags").innerHTML=item[2].map(t=>`<span class="tag">${t}</span>`).join("");
- $("results").classList.remove("show");$("xpflash").classList.remove("show");$("manualText").value="";audioBlob=null;$("scoreBtn").disabled=true;$("playback").style.display="none";$("status").textContent="Tap record and speak in Italian.";
+ $("results").classList.remove("show");$("xpflash").classList.remove("show");$("comparison").style.display="none";$("retryBtn").style.display="none";$("manualText").value="";audioBlob=null;lastAudioAnalysis=null;attemptOne=null;isRetry=false;currentMissionKey=$("missionTitle").textContent;$("scoreBtn").disabled=true;$("playback").style.display="none";$("status").textContent="Tap record and speak naturally in Italian.";
 }
 function supportedType(){
  const types=["audio/mp4","audio/webm;codecs=opus","audio/webm","audio/ogg;codecs=opus"];
@@ -223,7 +280,7 @@ async function toggleRecord(){
    lastDuration=(Date.now()-startTime)/1000; clearInterval(interval); $("timer").textContent=formatTime(lastDuration);
    audioBlob=new Blob(chunks,{type:mediaRecorder.mimeType||type||"audio/mp4"});
    $("playback").src=URL.createObjectURL(audioBlob);$("playback").style.display="block";$("scoreBtn").disabled=false;
-   $("recordBtn").className="primary";$("recordBtn").textContent="🎙 Record again";$("status").textContent="Recording ready. Tap Transcribe + score.";
+   $("recordBtn").className="primary";$("recordBtn").textContent="🎙 Record again";$("status").textContent="✅ Recording saved. Tap Analyze + Transcribe to measure your pauses and create the transcript.";
    stream.getTracks().forEach(t=>t.stop());
   };
   mediaRecorder.start(500); startTime=Date.now(); $("recordBtn").className="recording";$("recordBtn").textContent="■ Stop recording";$("status").textContent="Listening… keep speaking.";
@@ -231,63 +288,351 @@ async function toggleRecord(){
  }catch(e){$("status").textContent="Microphone access failed: "+(e.message||e.name)+". On Safari, confirm microphone permission and HTTPS."}
 }
 function formatTime(s){s=Math.floor(s);return String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0")}
-function apiUrl(path){
- const base=(state.backendUrl||"").trim().replace(/\/$/,"");
- return base ? base+path : path;
+
+
+const ITALIAN_STOP = new Set(["a","ad","al","alla","alle","allo","ai","agli","anche","che","chi","con","da","dal","dalla","dei","del","della","di","e","ed","è","era","ero","essere","gli","ha","hai","hanno","ho","i","il","in","io","la","le","lo","loro","ma","mi","mia","mie","miei","mio","ne","nel","nella","noi","non","o","per","più","poi","quale","quello","questa","questo","se","si","sono","su","sul","tra","un","una","uno","voi"]);
+const CONNECTORS=["perché","quindi","però","mentre","inoltre","comunque","invece","anche se","secondo me","alla fine","prima","poi","infatti","per esempio","nonostante","magari","allora","cioè","dunque","ecco","diciamo"];
+const HESITATION_FILLERS=["eh","ehm","em","mmm","uh","uhm","um","umm"];
+const DISCOURSE_FILLERS=["allora","cioè","dunque","ecco","diciamo","praticamente","insomma"];
+const COMMON_RULES=[
+ {id:"sono_gerundio",re:/\bsono\s+([a-zàèéìòù]+ando|[a-zàèéìòù]+endo)\b/gi,label:"Use stare + gerundio",fix:"For an action happening now, use sto/stai/sta/stiamo/state/stanno + gerundio, not sono + gerundio."},
+ {id:"dipende_di",re:/\bdipende\s+di\b/gi,label:"dipendere da",fix:"Use dipende da, not dipende di."},
+ {id:"ieri_present",re:/\bieri\b[^.!?]{0,80}\b(vado|faccio|mangio|vedo|parlo|lavoro|studio|gioco|compro|prendo)\b/gi,label:"Past tense after ieri",fix:"After ieri, check whether the main action should be in the past tense."},
+ {id:"siamo_andato",re:/\bsiamo\s+andato\b/gi,label:"Agreement with essere",fix:"With essere, the participle agrees: siamo andati/andate."},
+ {id:"interessato_di",re:/\binteressat[oaie]\s+di\b/gi,label:"interessato a",fix:"Use interessato a."},
+ {id:"pensare_di_opinion",re:/\bpenso\s+di\s+che\b/gi,label:"penso che",fix:"Use penso che + clause, not penso di che."},
+ {id:"molto_buono_fem",re:/\b(pizza|cosa|giornata|esperienza)\b[^.!?]{0,25}\bmolto\s+buono\b/gi,label:"Adjective agreement",fix:"Check adjective agreement: e.g. una pizza molto buona."},
+ {id:"ho_essere",re:/\bho\s+(andato|arrivato|partito|rimasto|nato|venuto|tornato)\b/gi,label:"Essere auxiliary",fix:"Many movement/change-of-state verbs use essere in passato prossimo: sono andato, sono arrivato, etc."}
+];
+
+function tokenizeItalian(text){return (text.toLowerCase().match(/[a-zàèéìíîòóùú'-]+/gi)||[]).filter(Boolean)}
+function sentenceCount(text){const p=text.split(/[.!?]+/).map(x=>x.trim()).filter(Boolean);return Math.max(1,p.length)}
+function clamp(n,min,max){return Math.max(min,Math.min(max,n))}
+function countTerms(words, terms){let c=0;for(const w of words) if(terms.includes(w)) c++;return c}
+function repeatedStarts(words){
+ let c=0;
+ for(let i=1;i<words.length;i++) if(words[i]===words[i-1] && words[i].length>2)c++;
+ return c;
 }
-async function scoreAudio(){
- if(!audioBlob)return;
- $("scoreBtn").disabled=true;$("status").textContent="Uploading audio, transcribing Italian, then scoring…";
+function detectTargets(text){
+ const found=[];
+ for(const rule of COMMON_RULES){
+   rule.re.lastIndex=0;
+   if(rule.re.test(text)){
+     found.push({id:rule.id,label:rule.label,reason:rule.fix});
+     state.errors[rule.id]=(state.errors[rule.id]||0)+1;
+   }
+ }
+ return found.slice(0,3);
+}
+function targetWords(){
+ return Array.from(document.querySelectorAll("#missionTags .tag")).map(x=>x.textContent.trim().toLowerCase()).filter(x=>x && !x.includes("xp") && !x.includes("english"));
+}
+async function blobToMono(blob){
+ const arr=await blob.arrayBuffer();
+ const Ctx=window.AudioContext||window.webkitAudioContext;
+ const ctx=new Ctx();
+ const buf=await ctx.decodeAudioData(arr.slice(0));
+ const len=buf.length, chans=buf.numberOfChannels;
+ const mono=new Float32Array(len);
+ for(let c=0;c<chans;c++){
+   const d=buf.getChannelData(c);
+   for(let i=0;i<len;i++) mono[i]+=d[i]/chans;
+ }
+ const rate=buf.sampleRate;
+ await ctx.close();
+ return {samples:mono,sampleRate:rate,duration:buf.duration};
+}
+function resampleLinear(input,inRate,outRate=16000){
+ if(inRate===outRate)return input;
+ const ratio=inRate/outRate, outLen=Math.round(input.length/ratio), out=new Float32Array(outLen);
+ for(let i=0;i<outLen;i++){
+   const x=i*ratio, x0=Math.floor(x), x1=Math.min(x0+1,input.length-1), f=x-x0;
+   out[i]=input[x0]*(1-f)+input[x1]*f;
+ }
+ return out;
+}
+function analyzeWaveform(samples,sampleRate){
+ const winMs=100, size=Math.max(1,Math.round(sampleRate*winMs/1000));
+ const rms=[];
+ let max=0;
+ for(let i=0;i<samples.length;i+=size){
+   let sum=0,n=0;
+   for(let j=i;j<Math.min(i+size,samples.length);j++){sum+=samples[j]*samples[j];n++}
+   const r=Math.sqrt(sum/Math.max(1,n));rms.push(r);if(r>max)max=r;
+ }
+ const sorted=[...rms].sort((a,b)=>a-b);
+ const noise=sorted[Math.floor(sorted.length*.18)]||0;
+ const threshold=Math.max(.008,Math.min(.035,noise*2.5,max*.13));
+ const silent=rms.map(r=>r<threshold);
+ const pauses=[];let start=null;
+ for(let i=0;i<=silent.length;i++){
+   if(i<silent.length&&silent[i]&&start===null)start=i;
+   if((i===silent.length||!silent[i])&&start!==null){
+     const dur=(i-start)*winMs/1000;
+     // Ignore leading/trailing silence for hesitation metrics
+     if(start>1 && i<silent.length-1 && dur>=.35) pauses.push(dur);
+     start=null;
+   }
+ }
+ const duration=samples.length/sampleRate;
+ const internalSilence=pauses.reduce((a,b)=>a+b,0);
+ const longPauses=pauses.filter(p=>p>=2);
+ const planningPauses=pauses.filter(p=>p>=1&&p<2);
+ const longest=pauses.length?Math.max(...pauses):0;
+ const silencePct=duration?internalSilence/duration*100:0;
+ return {
+   duration, pauses, pauseCount:pauses.length, planningPauseCount:planningPauses.length,
+   longPauseCount:longPauses.length,longestPause:longest,silencePct,
+   pauseRate:duration?longPauses.length/(duration/60):0,
+   threshold
+ };
+}
+async function ensureWhisper(){
+ if(whisperTranscriber)return whisperTranscriber;
+ $("engineProgress").style.display="block";
+ $("engineStage").textContent="Loading local Whisper…";
+ $("engineFill").style.width="35%";
+ $("engineDetail").textContent="First use downloads a small multilingual model. Keep Safari open.";
+ const mod=await import("https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1/+esm");
+ $("engineFill").style.width="50%";
+ whisperTranscriber=await mod.pipeline("automatic-speech-recognition","Xenova/whisper-tiny",{dtype:"q8"});
+ return whisperTranscriber;
+}
+async function transcribeLocal(pcm16k){
+ const transcriber=await ensureWhisper();
+ $("engineStage").textContent="Transcribing Italian locally…";
+ $("engineFill").style.width="70%";
+ $("engineDetail").textContent="Nothing is being sent to a paid OpenAI API.";
+ const out=await transcriber(pcm16k,{
+   language:"italian",
+   task:"transcribe",
+   chunk_length_s:30,
+   stride_length_s:5,
+   return_timestamps:"word"
+ });
+ return out;
+}
+function transcriptMetrics(text,audio){
+ const words=tokenizeItalian(text), wc=words.length;
+ const unique=[...new Set(words.filter(w=>!ITALIAN_STOP.has(w)&&w.length>2))];
+ const hesitation=countTerms(words,HESITATION_FILLERS);
+ const discourse=countTerms(words,DISCOURSE_FILLERS);
+ const repeats=repeatedStarts(words);
+ const speechMin=Math.max(.05,(audio.duration-(audio.pauses||[]).reduce((a,b)=>a+b,0))/60);
+ const wpm=wc/speechMin;
+ return {words,wc,unique,hesitation,discourse,repeats,wpm};
+}
+function combinedScore(text,audio){
+ const tm=transcriptMetrics(text,audio);
+ const connectors=CONNECTORS.filter(c=>text.toLowerCase().includes(c));
+ const targets=targetWords(), targetHits=targets.filter(t=>text.toLowerCase().includes(t));
+ const issues=detectTargets(text), sents=sentenceCount(text), avgSentence=tm.wc/sents;
+
+ const idealWpm=105;
+ const wpmScore=clamp(10-Math.abs(tm.wpm-idealWpm)/12,3,10);
+ const pauseScore=clamp(10-audio.pauseRate*.75-audio.silencePct*.035,2.5,10);
+ const fillerRate=tm.hesitation/Math.max(.25,audio.duration/60);
+ const fillerScore=clamp(10-fillerRate*.65-tm.repeats*.25,3,10);
+ const fluency=clamp(wpmScore*.35+pauseScore*.45+fillerScore*.20,0,10);
+
+ const variety=tm.wc?tm.unique.length/tm.wc:0;
+ const vocabulary=clamp(3+variety*10+Math.min(2,targetHits.length*.7),0,10);
+ const structure=clamp(3+Math.min(3,connectors.length*.7)+Math.min(2,avgSentence/8)+Math.min(2,sents/3),0,10);
+ const grammar=clamp(8.8-issues.length*1.1,4,9.5);
+ const production=clamp(3+Math.min(4,tm.wc/25)+Math.min(3,audio.duration/90),0,10);
+ const mission=clamp(5+Math.min(3,targetHits.length)+Math.min(2,tm.wc/50),0,10);
+ const naturalness=clamp((fluency+vocabulary+structure+grammar)/4,0,10);
+ const score=clamp(fluency*.25+grammar*.20+mission*.20+vocabulary*.15+production*.10+structure*.10,0,10);
+
+ let xp=clamp(Math.round(10+tm.wc/8+audio.duration/25+targetHits.length*2),10,50);
+ const fixes=[];
+ if(audio.longPauseCount>0) fixes.push(`Reduce pauses over 2 seconds (${audio.longPauseCount} this attempt). Use a connector or simple phrase to keep moving.`);
+ if(fillerRate>3) fixes.push(`Hesitation fillers are high (${tm.hesitation} total). Replace some with Italian discourse markers such as allora, quindi or cioè.`);
+ if(issues.length) fixes.push(issues[0].reason);
+ if(!fixes.length && audio.planningPauseCount>2) fixes.push("Shorten 1–2 second planning pauses by reusing simple high-frequency sentence patterns.");
+ if(!fixes.length) fixes.push("Keep the same accuracy and repeat with slightly smoother continuity.");
+
+ return {
+   score:+score.toFixed(1),fluency:+fluency.toFixed(1),grammar:+grammar.toFixed(1),
+   vocabulary:+vocabulary.toFixed(1),structure:+structure.toFixed(1),
+   naturalness:+naturalness.toFixed(1),mission:+mission.toFixed(1),
+   summary:`${tm.wc} words at ${Math.round(tm.wpm)} WPM. ${audio.longPauseCount} pauses over 2s, ${tm.hesitation} hesitation fillers, ${issues.length} high-value grammar pattern${issues.length===1?"":"s"} detected.`,
+   corrections:issues.map(i=>({original:i.label,correction:i.reason,reason:"Recurring learner pattern detected locally."})),
+   natural_version:fixes.slice(0,3).join(" "),
+   coach_challenge:`Retry the same mission now. Main target: ${fixes[0]}`,
+   xp,transcript:text,words:tm.wc,uniqueWords:tm.unique,connectors,targetHits,
+   hesitation:tm.hesitation,discourse:tm.discourse,repeats:tm.repeats,wpm:tm.wpm,
+   audio,fixes
+ };
+}
+async function analyzeAndTranscribe(){
+ if(!audioBlob){$("status").textContent="Record an answer first.";return}
+ $("scoreBtn").disabled=true;
+ $("engineProgress").style.display="block";
+ $("engineStage").textContent="Analyzing your recording…";$("engineFill").style.width="10%";
+ $("engineDetail").textContent="Measuring silence, pauses and continuity.";
  try{
-  const ext=audioBlob.type.includes("mp4")?"m4a":audioBlob.type.includes("ogg")?"ogg":"webm";
-  const fd=new FormData();fd.append("audio",audioBlob,"speaking."+ext);fd.append("mode",mode);fd.append("mission",$("missionPrompt").textContent);fd.append("duration",String(lastDuration));
-  const r=await fetch(apiUrl("/api/score"),{method:"POST",body:fd}); const data=await r.json(); if(!r.ok)throw new Error(data.error||"Scoring failed");
-  showResult(data,lastDuration);
- }catch(e){$("status").textContent="Could not score: "+e.message;$("scoreBtn").disabled=false}
+   const decoded=await blobToMono(audioBlob);
+   lastAudioAnalysis=analyzeWaveform(decoded.samples,decoded.sampleRate);
+   $("engineFill").style.width="25%";
+   const pcm=resampleLinear(decoded.samples,decoded.sampleRate,16000);
+   let text="";
+   try{
+     const result=await transcribeLocal(pcm);
+     text=(result&&result.text||"").trim();
+     $("manualText").value=text;
+     $("engineFill").style.width="90%";
+   }catch(transErr){
+     console.error(transErr);
+     $("engineStage").textContent="Audio analyzed; local transcription unavailable";
+     $("engineDetail").textContent="Your pause metrics are ready. Enter/edit the transcript below (iPhone dictation is fine) and tap Re-score edited transcript.";
+     $("engineFill").style.width="75%";
+     $("manualText").focus();
+     $("scoreBtn").disabled=false;
+     return;
+   }
+   if(!text){
+     $("engineStage").textContent="No transcript detected";
+     $("engineDetail").textContent="The audio metrics are ready. Add the transcript manually and re-score.";
+     $("scoreBtn").disabled=false;return;
+   }
+   const data=combinedScore(text,lastAudioAnalysis);
+   $("engineFill").style.width="100%";$("engineStage").textContent="Speaking analysis complete";
+   $("engineDetail").textContent="Review your fixes, then Retry immediately.";
+   showSpeakingResult(data,lastAudioAnalysis.duration);
+ }catch(e){
+   console.error(e);
+   $("status").textContent="Analysis failed: "+(e.message||e);
+   $("engineStage").textContent="Could not analyze this recording";
+   $("engineDetail").textContent="Try a shorter recording or reload Safari.";
+   $("scoreBtn").disabled=false;
+ }
 }
-async function scoreText(){
- const text=$("manualText").value.trim();if(!text){$("status").textContent="Type some Italian first.";return}
- $("status").textContent="Scoring typed Italian…";
- try{
-  const r=await fetch(apiUrl("/api/score-text"),{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text,mode,mission:$("missionPrompt").textContent})});
-  const data=await r.json();if(!r.ok)throw new Error(data.error||"Scoring failed");showResult(data,0);
- }catch(e){$("status").textContent="Could not score: "+e.message}
+function rescoreEdited(){
+ const text=$("manualText").value.trim();
+ if(!text){$("status").textContent="Add or transcribe some Italian first.";return}
+ if(!lastAudioAnalysis){
+   const dur=Math.max(lastDuration,30);
+   lastAudioAnalysis={duration:dur,pauses:[],pauseCount:0,planningPauseCount:0,longPauseCount:0,longestPause:0,silencePct:0,pauseRate:0};
+ }
+ showSpeakingResult(combinedScore(text,lastAudioAnalysis),lastAudioAnalysis.duration);
 }
-function showResult(d,duration){
- $("overall").textContent=Number(d.score).toFixed(1)+" / 10";$("summary").textContent=d.summary||"";
- $("transcript").textContent=d.transcript||"—";
- $("corrections").innerHTML=(d.corrections||[]).map(c=>`<div style="margin-bottom:8px"><b>${escapeHtml(c.original)}</b> → ${escapeHtml(c.correction)}<div class="muted tiny">${escapeHtml(c.reason)}</div></div>`).join("")||"No major correction needed.";
- $("natural").textContent=d.natural_version||"—";
- $("skills").innerHTML=`Fluency <b>${d.fluency}/10</b><br>Grammar <b>${d.grammar}/10</b><br>Vocabulary <b>${d.vocabulary}/10</b><br>Naturalness <b>${d.naturalness}/10</b>`;
- $("coach").textContent=d.coach_challenge||"Repeat once more, a little faster.";
- $("results").classList.add("show"); const earned=Number(d.xp||20);state.xp+=earned;
- if(duration>0){const mins=duration/60;state.minutes+=mins;state.sessions+=1;state.scores.push(Number(d.score));state.history.push({mode,minutes:mins,score:Number(d.score),date:new Date().toLocaleDateString()})}
- save();$("xpflash").textContent=`+${earned} XP · session scored and saved to ${monthLabel()}`;$("xpflash").classList.add("show");$("status").textContent="Scored. Repeat the coach challenge for another rep.";$("scoreBtn").disabled=false;
+function metricLine(d){
+ return `WPM <b>${Math.round(d.wpm)}</b><br>Long pauses <b>${d.audio.longPauseCount}</b><br>Longest pause <b>${d.audio.longestPause.toFixed(1)}s</b><br>Silence/hesitation <b>${d.audio.silencePct.toFixed(0)}%</b><br>Hesitation fillers <b>${d.hesitation}</b><br>Italian discourse markers <b>${d.discourse}</b>`;
+}
+function showSpeakingResult(d,duration){
+ $("overall").textContent=d.score.toFixed(1)+" / 10";
+ $("summary").textContent=d.summary;
+ $("transcript").textContent=d.transcript;
+ $("corrections").innerHTML=d.corrections.length
+   ? d.corrections.map(c=>`<div style="margin-bottom:9px"><b>${escapeHtml(c.original)}</b><div>${escapeHtml(c.correction)}</div></div>`).join("")
+   : "No high-priority rule-based grammar error detected. Focus on the fluency fixes below.";
+ $("natural").innerHTML=d.fixes.map((x,i)=>`<div style="margin-bottom:7px"><b>${i+1}.</b> ${escapeHtml(x)}</div>`).join("");
+ $("skills").innerHTML=`Fluency <b>${d.fluency}/10</b><br>Grammar <b>${d.grammar}/10</b><br>Vocabulary <b>${d.vocabulary}/10</b><br>Mission <b>${d.mission}/10</b><br>Structure <b>${d.structure}/10</b>`;
+ $("audioMetrics").innerHTML=metricLine(d);
+ $("coach").textContent=d.coach_challenge;
+ $("results").classList.add("show");$("retryBtn").style.display="inline-block";
+
+ if(isRetry && attemptOne){
+   const gain=d.score-attemptOne.score;
+   state.retryGains.push(gain);
+   const pauseDelta=attemptOne.audio.longPauseCount-d.audio.longPauseCount;
+   const fillerDelta=attemptOne.hesitation-d.hesitation;
+   $("comparison").style.display="block";
+   $("comparison").innerHTML=`<div class="kicker" style="color:var(--green)">Attempt 1 → Attempt 2</div>
+    <h3 style="margin-top:7px">Score ${attemptOne.score.toFixed(1)} → ${d.score.toFixed(1)} <span style="color:${gain>=0?"var(--green)":"var(--red)"}">${gain>=0?"+":""}${gain.toFixed(1)}</span></h3>
+    <div class="dashboard-grid">
+      <div class="dashbox"><div class="tiny muted">Long pauses</div><b>${attemptOne.audio.longPauseCount} → ${d.audio.longPauseCount}</b></div>
+      <div class="dashbox"><div class="tiny muted">Fillers</div><b>${attemptOne.hesitation} → ${d.hesitation}</b></div>
+      <div class="dashbox"><div class="tiny muted">WPM</div><b>${Math.round(attemptOne.wpm)} → ${Math.round(d.wpm)}</b></div>
+      <div class="dashbox"><div class="tiny muted">Grammar target errors</div><b>${attemptOne.corrections.length} → ${d.corrections.length}</b></div>
+    </div>
+    <div class="tiny muted" style="margin-top:8px">${pauseDelta>0?`You removed ${pauseDelta} long pause${pauseDelta===1?"":"s"}. `:""}${fillerDelta>0?`You removed ${fillerDelta} hesitation filler${fillerDelta===1?"":"s"}.`:""}</div>`;
+ }else{
+   attemptOne=d;
+ }
+
+ state.xp+=d.xp;state.words+=d.words;
+ state.uniqueWords=[...new Set([...(state.uniqueWords||[]),...d.uniqueWords])].slice(0,5000);
+ state.wpm.push(d.wpm);state.pauseRates.push(d.audio.pauseRate);
+ const mins=duration/60;state.minutes+=mins;state.sessions+=1;state.scores.push(d.score);
+ state.history.push({mode,minutes:mins,score:d.score,date:new Date().toLocaleDateString(),words:d.words,wpm:d.wpm,longPauses:d.audio.longPauseCount,fillers:d.hesitation,retry:isRetry});
+ if(state.history.length>150)state.history=state.history.slice(-150);
+ save();
+ $("xpflash").textContent=`+${d.xp} XP · ${mins.toFixed(1)} speaking min logged · ${isRetry?"retry":"attempt"} scored`;
+ $("xpflash").classList.add("show");
+ $("status").textContent=isRetry?"Retry scored. Review the comparison.":"Attempt 1 scored. Review the 3 fixes, then Retry immediately.";
+ $("scoreBtn").disabled=false;
+}
+function beginRetry(){
+ if(!attemptOne)return;
+ isRetry=true;audioBlob=null;lastAudioAnalysis=null;lastDuration=0;
+ $("results").classList.remove("show");$("xpflash").classList.remove("show");
+ $("engineProgress").style.display="none";$("manualText").value="";$("playback").style.display="none";
+ $("scoreBtn").disabled=true;$("retryBtn").style.display="none";
+ $("status").textContent="Attempt 2: repeat the SAME mission and focus on the fix above.";
+ $("timer").textContent="00:00";
+ window.scrollTo({top:0,behavior:"smooth"});
+}
+function buildCoachPrompt(){
+ const text=$("manualText").value.trim();if(!text)return "";
+ const a=lastAudioAnalysis;
+ return `Act as my Italian speaking coach. I am practicing spontaneous Italian.
+
+MISSION: ${$("missionPrompt").textContent}
+
+TRANSCRIPT:
+${text}
+
+MEASURED AUDIO:
+Duration: ${a?a.duration.toFixed(1):"?"} sec
+Long pauses (>2 sec): ${a?a.longPauseCount:"?"}
+Longest pause: ${a?a.longestPause.toFixed(1):"?"} sec
+Internal silence: ${a?a.silencePct.toFixed(0):"?"}%
+
+Please give:
+1. My 3 highest-value corrections.
+2. A natural but achievable Italian version.
+3. One suggestion for reducing hesitation.
+4. One 30-second retry instruction.
+Keep it concise.`;
+}
+async function copyCoach(){
+ const prompt=buildCoachPrompt();
+ if(!prompt){$("status").textContent="Analyze a recording first.";return}
+ try{await navigator.clipboard.writeText(prompt);$("status").textContent="✅ Coaching prompt copied. Paste it into ChatGPT for deeper feedback."}
+ catch(e){$("manualText").value=prompt;$("status").textContent="Prompt placed in the text box so you can copy it."}
 }
 function escapeHtml(s){return String(s||"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+function startBoss(){
+ mode="Story Mode";renderModes();document.querySelector('[data-screen="play"]').click();
+ $("missionTitle").textContent="Boss Battle: Dieci minuti in italiano";
+ $("missionPrompt").textContent="Speak for up to 10 minutes about your Italian journey, a memorable trip, your goals, and what you would like to do in Italy next. Use past, present and future. Try to use perché, mentre, quindi, però, secondo me and alla fine.";
+ $("missionTags").innerHTML=["passato","presente","futuro","mentre","quindi","però"].map(t=>`<span class="tag">${t}</span>`).join("");
+}
 function startAdventure(city){mode="Role Play";renderModes();document.querySelector('[data-screen="play"]').click();$("missionTitle").textContent=`Arrivo a ${city}`;$("missionPrompt").textContent=`You have just arrived in ${city}. Ask a station employee how to reach your hotel, clarify one detail you did not understand, and thank them naturally. Speak for at least 90 seconds.`}
 document.querySelectorAll(".nav button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("active"));b.classList.add("active");document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));$(b.dataset.screen).classList.add("active")});
-$("recordBtn").onclick=toggleRecord;$("scoreBtn").onclick=scoreAudio;$("scoreTextBtn").onclick=scoreText;$("newBtn").onclick=newChallenge;
+$("manualText").addEventListener("input",()=>{});
+$("recordBtn").onclick=toggleRecord;
+$("scoreBtn").onclick=analyzeAndTranscribe;
+$("scoreTextBtn").onclick=rescoreEdited;
+$("retryBtn").onclick=beginRetry;
+$("copyCoachBtn").onclick=copyCoach;
+$("newBtn").onclick=newChallenge;
 $("saveGoal").onclick=()=>{state.goalHours=Math.max(1,Number($("goalHours").value)||30);save()};
-$("backendUrl").value=state.backendUrl||"";
-$("saveBackend").onclick=()=>{
- state.backendUrl=$("backendUrl").value.trim().replace(/\/$/,"");
- save();
- $("backendStatus").textContent=state.backendUrl?"Saved. SpeakQuest will now send scoring requests to this server.":"Cleared. AI scoring will use same-origin /api routes.";
-};
-$("testBackend").onclick=async()=>{
- const url=($("backendUrl").value.trim().replace(/\/$/,"")||state.backendUrl);
- if(!url){$("backendStatus").textContent="Enter your deployed backend URL first.";return}
- $("backendStatus").textContent="Testing…";
- try{
-  const r=await fetch(url+"/api/health");
-  const d=await r.json();
-  $("backendStatus").textContent=r.ok&&d.ok?"✅ Connected. AI backend is reachable.":"Server responded, but health check was not OK.";
- }catch(e){
-  $("backendStatus").textContent="❌ Could not connect. Check the URL and server CORS settings.";
+if($("resetDataBtn")) $("resetDataBtn").onclick=()=>{
+ if(confirm("Reset all SpeakQuest progress stored on this device?")){
+   localStorage.removeItem("sq_state");location.reload();
  }
 };
-const type=supportedType();$("compat").innerHTML=`<b>Recording API:</b> ${window.MediaRecorder?"available":"not available"}<br><b>Microphone API:</b> ${navigator.mediaDevices?.getUserMedia?"available":"not available"}<br><b>Preferred recording format:</b> ${type||"browser default"}<br><b>Secure page:</b> ${window.isSecureContext?"yes":"no — microphone may be blocked"}<br><b>AI server:</b> ${state.backendUrl?state.backendUrl:"not configured yet"}`;
+if($("exportDataBtn")) $("exportDataBtn").onclick=()=>{
+ const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});
+ const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="speakquest-progress.json";a.click();URL.revokeObjectURL(a.href);
+ $("freeStatus").textContent="Progress exported as JSON.";
+};
+const type=supportedType();
+$("compat").innerHTML=`<b>Recording API:</b> ${window.MediaRecorder?"available":"not available"}<br><b>Microphone API:</b> ${navigator.mediaDevices?.getUserMedia?"available":"not available"}<br><b>Preferred recording format:</b> ${type||"browser default"}<br><b>Secure page:</b> ${window.isSecureContext?"yes":"no — microphone may be blocked"}<br><b>Paid API:</b> none · <b>Local Whisper:</b> downloads on first use`;
 renderModes();newChallenge();renderStats();
 </script>
 </body></html>
